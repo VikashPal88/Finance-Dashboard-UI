@@ -2,114 +2,19 @@
 
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, ChevronLeft, ChevronRight } from 'lucide-react';
+import { X, CalendarIcon } from 'lucide-react';
 import { useStore } from '@/store/useStore';
 import { Transaction, TransactionType, Category } from '@/types';
 import { EXPENSE_CATEGORIES, INCOME_CATEGORIES } from '@/data/mockData';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Calendar } from '@/components/ui/calendar';
+import { format, parseISO } from 'date-fns';
 
 interface TransactionModalProps {
   isOpen: boolean;
   onClose: () => void;
   editTransaction?: Transaction | null;
-}
-
-// Simple custom calendar component
-function MiniCalendar({
-  value,
-  onChange,
-}: {
-  value: string;
-  onChange: (date: string) => void;
-}) {
-  const [viewing, setViewing] = useState(() => {
-    const d = value ? new Date(value) : new Date();
-    return { year: d.getFullYear(), month: d.getMonth() };
-  });
-
-  const daysInMonth = new Date(viewing.year, viewing.month + 1, 0).getDate();
-  const firstDay = new Date(viewing.year, viewing.month, 1).getDay();
-  const today = new Date().toISOString().split('T')[0];
-  const weekdays = ['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa'];
-  const monthNames = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
-
-  const prevMonth = () => {
-    setViewing((v) => {
-      if (v.month === 0) return { year: v.year - 1, month: 11 };
-      return { ...v, month: v.month - 1 };
-    });
-  };
-
-  const nextMonth = () => {
-    setViewing((v) => {
-      if (v.month === 11) return { year: v.year + 1, month: 0 };
-      return { ...v, month: v.month + 1 };
-    });
-  };
-
-  const selectDay = (day: number) => {
-    const m = String(viewing.month + 1).padStart(2, '0');
-    const d = String(day).padStart(2, '0');
-    onChange(`${viewing.year}-${m}-${d}`);
-  };
-
-  const selectedStr = value;
-
-  return (
-    <div className="rounded-xl border bg-[var(--surface)] p-3 absolute z-10 w-full mt-2 shadow-xl" style={{ borderColor: 'var(--glass-border)' }}>
-      {/* Header */}
-      <div className="flex items-center justify-between mb-3">
-        <button type="button" onClick={prevMonth} className="p-1 rounded-lg hover:bg-[var(--surface-hover)] transition-colors">
-          <ChevronLeft size={16} className="text-[var(--muted)]" />
-        </button>
-        <span className="text-xs font-semibold">
-          {monthNames[viewing.month]} {viewing.year}
-        </span>
-        <button type="button" onClick={nextMonth} className="p-1 rounded-lg hover:bg-[var(--surface-hover)] transition-colors">
-          <ChevronRight size={16} className="text-[var(--muted)]" />
-        </button>
-      </div>
-
-      {/* Weekday headers */}
-      <div className="grid grid-cols-7 gap-0.5 mb-1">
-        {weekdays.map((d) => (
-          <div key={d} className="text-center text-[9px] font-semibold text-[var(--muted)] uppercase tracking-wider py-1">
-            {d}
-          </div>
-        ))}
-      </div>
-
-      {/* Days grid */}
-      <div className="grid grid-cols-7 gap-0.5">
-        {Array.from({ length: firstDay }).map((_, i) => (
-          <div key={`empty-${i}`} />
-        ))}
-        {Array.from({ length: daysInMonth }, (_, i) => i + 1).map((day) => {
-          const m = String(viewing.month + 1).padStart(2, '0');
-          const d = String(day).padStart(2, '0');
-          const dateStr = `${viewing.year}-${m}-${d}`;
-          const isSelected = dateStr === selectedStr;
-          const isToday = dateStr === today;
-
-          return (
-            <button
-              key={day}
-              type="button"
-              onClick={() => selectDay(day)}
-              className={`w-full aspect-square rounded-lg text-xs font-medium transition-all flex items-center justify-center ${
-                isSelected
-                  ? 'bg-primary text-white shadow-md shadow-primary/30'
-                  : isToday
-                  ? 'bg-primary/10 text-primary'
-                  : 'hover:bg-[var(--surface-hover)] text-[var(--foreground)]'
-              }`}
-            >
-              {day}
-            </button>
-          );
-        })}
-      </div>
-    </div>
-  );
 }
 
 export default function TransactionModal({ isOpen, onClose, editTransaction }: TransactionModalProps) {
@@ -176,6 +81,7 @@ export default function TransactionModal({ isOpen, onClose, editTransaction }: T
 
   const formatDisplayDate = (dateStr: string) => {
     const d = new Date(dateStr);
+    if (isNaN(d.getTime())) return dateStr;
     return new Intl.DateTimeFormat('en-IN', { day: 'numeric', month: 'short', year: 'numeric' }).format(d);
   };
 
@@ -204,6 +110,7 @@ export default function TransactionModal({ isOpen, onClose, editTransaction }: T
               <button
                 onClick={onClose}
                 className="p-1.5 rounded-lg hover:bg-[var(--surface-hover)] transition-colors"
+                type="button"
               >
                 <X size={18} />
               </button>
@@ -246,18 +153,18 @@ export default function TransactionModal({ isOpen, onClose, editTransaction }: T
               {/* Account Selection */}
               <div className="space-y-1.5">
                 <label className="text-xs font-medium text-[var(--muted)]">Account</label>
-                <select
-                  value={form.accountId}
-                  onChange={(e) => setForm({ ...form, accountId: e.target.value })}
-                  className="w-full px-4 py-2.5 rounded-xl text-sm border bg-[var(--surface)] text-[var(--foreground)]"
-                  style={{ borderColor: 'var(--glass-border)' }}
-                >
-                  {accounts.map((acc) => (
-                    <option key={acc.id} value={acc.id}>
-                      {acc.icon} {acc.name}
-                    </option>
-                  ))}
-                </select>
+                <Select value={form.accountId} onValueChange={(val) => setForm({ ...form, accountId: val })}>
+                  <SelectTrigger className="w-full h-[44px] rounded-xl text-sm border bg-[var(--surface)] text-[var(--foreground)]" style={{ borderColor: 'var(--glass-border)' }}>
+                    <SelectValue placeholder="Select account" />
+                  </SelectTrigger>
+                  <SelectContent className="bg-[var(--dropdown-bg)] border-[var(--glass-border)] text-[var(--foreground)] z-[60]">
+                    {accounts.map((acc) => (
+                      <SelectItem key={acc.id} value={acc.id}>
+                        {acc.icon} {acc.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               </div>
 
               {/* Description */}
@@ -288,59 +195,52 @@ export default function TransactionModal({ isOpen, onClose, editTransaction }: T
                 />
               </div>
 
-              {/* Category - styled as dropdown */}
+              {/* Category */}
               <div className="space-y-1.5">
                 <label className="text-xs font-medium text-[var(--muted)]">Category</label>
-                <select
-                  value={form.category}
-                  onChange={(e) => setForm({ ...form, category: e.target.value })}
-                  className="w-full px-4 py-2.5 rounded-xl text-sm border bg-[var(--surface)] text-[var(--foreground)]"
-                  style={{ borderColor: 'var(--glass-border)' }}
-                >
-                  {currentCategories.map((c) => (
-                    <option key={c.id} value={c.name}>
-                      {c.name}
-                    </option>
-                  ))}
-                </select>
+                <Select value={form.category} onValueChange={(val) => setForm({ ...form, category: val as Category })}>
+                  <SelectTrigger className="w-full h-[44px] rounded-xl text-sm border bg-[var(--surface)] text-[var(--foreground)]" style={{ borderColor: 'var(--glass-border)' }}>
+                    <SelectValue placeholder="Select category" />
+                  </SelectTrigger>
+                  <SelectContent className="bg-[var(--dropdown-bg)] border-[var(--glass-border)] text-[var(--foreground)] z-[60]">
+                    {currentCategories.map((c) => (
+                      <SelectItem key={c.id} value={c.name}>
+                        {c.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               </div>
 
               {/* Date - Custom Calendar Toggle */}
-              <div className="space-y-1.5 relative">
+              <div className="space-y-1.5 relative flex flex-col">
                 <label className="text-xs font-medium text-[var(--muted)]">Date</label>
-                <button
-                  type="button"
-                  onClick={() => setShowCalendar(!showCalendar)}
-                  className="w-full px-4 py-2.5 rounded-xl text-sm text-left border flex items-center justify-between transition-colors hover:bg-[var(--surface-hover)] focus:ring-2 focus:ring-primary/20"
-                  style={{ borderColor: 'var(--glass-border)', backgroundColor: 'var(--input-bg)' }}
-                >
-                  <span>{formatDisplayDate(form.date)}</span>
-                  <span className="text-[var(--muted)] text-xs">📅</span>
-                </button>
-                <AnimatePresence>
-                  {showCalendar && (
-                    <motion.div
-                      initial={{ opacity: 0, y: -10 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      exit={{ opacity: 0, y: -10 }}
-                      className="absolute z-20 w-full"
-                    >
-                      <MiniCalendar
-                        value={form.date}
-                        onChange={(date) => {
-                          setForm({ ...form, date });
-                          setShowCalendar(false);
-                        }}
-                      />
-                    </motion.div>
-                  )}
-                </AnimatePresence>
+                <Popover>
+                  <PopoverTrigger
+                    className="w-full h-[44px] px-4 rounded-xl text-sm text-left border flex items-center justify-between transition-colors hover:bg-[var(--surface-hover)] focus:ring-2 focus:ring-primary/20"
+                    style={{ borderColor: 'var(--glass-border)', backgroundColor: 'var(--input-bg)' }}
+                  >
+                    <span>{formatDisplayDate(form.date)}</span>
+                    <CalendarIcon className="text-[var(--muted)] h-4 w-4" />
+                  </PopoverTrigger>
+                  <PopoverContent className="w-auto p-0 z-[60] bg-[var(--dropdown-bg)] border-[var(--glass-border)]" align="start">
+                    <Calendar
+                      mode="single"
+                      selected={new Date(form.date)}
+                      onSelect={(date) => {
+                        if (date) setForm({ ...form, date: format(date, 'yyyy-MM-dd') });
+                      }}
+                      initialFocus
+                      className="text-[var(--foreground)]"
+                    />
+                  </PopoverContent>
+                </Popover>
               </div>
 
               {/* Submit */}
               <button
                 type="submit"
-                className="w-full py-3 rounded-xl bg-gradient-to-r from-indigo-500 to-purple-600 text-white text-sm font-semibold shadow-lg shadow-indigo-500/25 hover:shadow-indigo-500/40 transition-shadow"
+                className="w-full mt-4 py-3 rounded-xl bg-gradient-to-r from-indigo-500 to-purple-600 text-white text-sm font-semibold shadow-lg shadow-indigo-500/25 hover:shadow-indigo-500/40 transition-shadow"
               >
                 {isEdit ? 'Save Changes' : 'Add Transaction'}
               </button>

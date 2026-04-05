@@ -18,6 +18,8 @@ import {
 } from 'lucide-react';
 import { useStore } from '@/store/useStore';
 import ToggleSwitch from '@/components/common/ToggleSwitch';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
 export default function SettingsPage() {
   const { role, setRole, categories, addCategory, deleteCategory } = useStore();
@@ -334,15 +336,15 @@ export default function SettingsPage() {
 
         {/* Add New Category */}
         <div className="flex flex-wrap items-center gap-3 p-4 rounded-xl bg-[var(--surface)] border mb-4" style={{ borderColor: 'var(--glass-border)' }}>
-          <select
-            value={newCatType}
-            onChange={(e) => setNewCatType(e.target.value as any)}
-            className="px-3 py-2.5 rounded-lg text-sm border bg-[var(--background)] text-[var(--foreground)] cursor-pointer"
-            style={{ borderColor: 'var(--glass-border)' }}
-          >
-            <option value="expense">Expense</option>
-            <option value="income">Income</option>
-          </select>
+          <Select value={newCatType} onValueChange={(val) => setNewCatType(val as any)}>
+            <SelectTrigger className="w-[120px] h-[40px] rounded-lg text-sm border bg-[var(--background)] text-[var(--foreground)]" style={{ borderColor: 'var(--glass-border)' }}>
+              <SelectValue placeholder="Type" />
+            </SelectTrigger>
+            <SelectContent className="bg-[var(--dropdown-bg)] border-[var(--glass-border)] text-[var(--foreground)] z-[60]">
+              <SelectItem value="expense">Expense</SelectItem>
+              <SelectItem value="income">Income</SelectItem>
+            </SelectContent>
+          </Select>
           <input
             type="text"
             value={newCatName}
@@ -368,32 +370,52 @@ export default function SettingsPage() {
           </button>
         </div>
 
-        {/* Category List */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2 max-h-72 overflow-y-auto pr-1 custom-scrollbar">
-          {categories.map((cat) => (
-            <div
-              key={cat.id}
-              className="flex items-center justify-between p-3 rounded-xl hover:bg-[var(--surface-hover)] border border-transparent hover:border-[var(--glass-border)] transition-all group"
+        {/* Category List (Dropdown Management) */}
+        <div className="flex items-center gap-4">
+          <Popover>
+            <PopoverTrigger
+              className="w-full sm:w-auto px-5 py-2.5 rounded-xl border flex items-center justify-between gap-3 text-sm font-medium transition-colors hover:bg-[var(--surface-hover)] bg-[var(--surface)] text-[var(--foreground)]"
+              style={{ borderColor: 'var(--glass-border)' }}
             >
-              <div className="flex items-center gap-3 min-w-0">
-                <div className="w-3.5 h-3.5 rounded-full shrink-0" style={{ backgroundColor: cat.color }} />
-                <span className="text-sm font-medium truncate">{cat.name}</span>
-                <span className={`text-[10px] uppercase font-semibold px-2 py-0.5 rounded-md shrink-0 ${
-                  cat.type === 'income' ? 'text-income bg-income/10' : 'text-expense bg-expense/10'
-                }`}>
-                  {cat.type}
-                </span>
+              View & Manage Categories
+              <ChevronRight size={16} className="text-[var(--muted)] rotate-90" />
+            </PopoverTrigger>
+            <PopoverContent
+              className="w-[280px] sm:w-[320px] p-2 bg-[var(--dropdown-bg)] border-[var(--glass-border)] text-[var(--foreground)] z-[60] shadow-xl rounded-xl"
+              align="start"
+            >
+              <div className="max-h-72 overflow-y-auto pr-1 custom-scrollbar space-y-1">
+                {categories.length === 0 && (
+                  <p className="text-xs text-center p-4 text-[var(--muted)]">No categories found.</p>
+                )}
+                {categories.map((cat) => (
+                  <div
+                    key={cat.id}
+                    className="flex items-center justify-between p-2 rounded-lg hover:bg-[var(--surface-hover)] transition-all group"
+                  >
+                    <div className="flex items-center gap-3 min-w-0">
+                      <div className="w-3 h-3 rounded-full shrink-0" style={{ backgroundColor: cat.color }} />
+                      <span className="text-sm font-medium truncate">{cat.name}</span>
+                      <span className={`text-[9px] uppercase font-semibold px-1.5 py-0.5 rounded-md shrink-0 ${
+                        cat.type === 'income' ? 'text-income bg-income/10' : 'text-expense bg-expense/10'
+                      }`}>
+                        {cat.type}
+                      </span>
+                    </div>
+                    {isAdmin && (
+                      <button
+                        onClick={() => { if(confirm('Delete this category?')) deleteCategory(cat.id); }}
+                        className="p-1.5 rounded-md text-[var(--muted)] hover:text-expense hover:bg-expense/10 transition-colors opacity-0 group-hover:opacity-100 shrink-0"
+                        title="Delete category"
+                      >
+                        <Trash2 size={14} />
+                      </button>
+                    )}
+                  </div>
+                ))}
               </div>
-              {isAdmin && (
-                <button
-                  onClick={() => { if(confirm('Delete this category?')) deleteCategory(cat.id); }}
-                  className="p-1.5 rounded-lg text-[var(--muted)] hover:text-expense hover:bg-expense/10 transition-colors opacity-0 group-hover:opacity-100"
-                >
-                  <Trash2 size={14} />
-                </button>
-              )}
-            </div>
-          ))}
+            </PopoverContent>
+          </Popover>
         </div>
       </motion.div>
 

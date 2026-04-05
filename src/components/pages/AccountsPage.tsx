@@ -80,9 +80,9 @@ export default function AccountsPage() {
   };
 
   const getMonthlySpent = (accountId: string) => {
-    // Count all expenses for the account against budget for accurate tracking
+    const currentMonth = new Date().toISOString().substring(0, 7);
     return transactions
-      .filter((t) => t.type === 'expense' && t.accountId === accountId)
+      .filter((t) => t.type === 'expense' && t.accountId === accountId && t.date.substring(0, 7) === currentMonth)
       .reduce((s, t) => s + t.amount, 0);
   };
 

@@ -26,6 +26,7 @@ import { CATEGORY_COLORS, CATEGORIES } from '@/data/mockData';
 import Badge from '@/components/common/Badge';
 import EmptyState from '@/components/common/EmptyState';
 import TransactionModal from './TransactionModal';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
 const ITEMS_PER_PAGE = 10;
 
@@ -228,38 +229,47 @@ export default function TransactionList() {
         className="flex flex-wrap items-center gap-3"
       >
         {/* Account Filter Pill */}
-        <select
+        <Select
           value={filters.accountId || 'all'}
-          onChange={(e) => { setFilters({ accountId: e.target.value as any }); setCurrentPage(1); }}
-          className="px-4 py-2.5 rounded-xl text-sm border bg-transparent cursor-pointer"
-          style={{ borderColor: 'var(--glass-border)' }}
+          onValueChange={(val) => { setFilters({ accountId: val as any }); setCurrentPage(1); }}
         >
-          <option value="all">All Accounts</option>
-          {accounts.map((a) => <option key={a.id} value={a.id}>{a.icon} {a.name}</option>)}
-        </select>
+          <SelectTrigger className="w-[180px] h-[40px] rounded-xl text-sm border bg-[var(--surface)] text-[var(--foreground)]" style={{ borderColor: 'var(--glass-border)' }}>
+            <SelectValue placeholder="All Accounts" />
+          </SelectTrigger>
+          <SelectContent className="bg-[var(--dropdown-bg)] border-[var(--glass-border)] text-[var(--foreground)] z-[60]">
+            <SelectItem value="all">All Accounts</SelectItem>
+            {accounts.map((a) => <SelectItem key={a.id} value={a.id}>{a.icon} {a.name}</SelectItem>)}
+          </SelectContent>
+        </Select>
 
         {/* Category Filter Pill */}
-        <select
+        <Select
           value={filters.category}
-          onChange={(e) => { setFilters({ category: e.target.value as any }); setCurrentPage(1); }}
-          className="px-4 py-2.5 rounded-xl text-sm border bg-transparent cursor-pointer"
-          style={{ borderColor: 'var(--glass-border)' }}
+          onValueChange={(val) => { setFilters({ category: val as any }); setCurrentPage(1); }}
         >
-          <option value="all">All Categories</option>
-          {CATEGORIES.map((c) => <option key={c} value={c}>{c}</option>)}
-        </select>
+          <SelectTrigger className="w-[180px] h-[40px] rounded-xl text-sm border bg-[var(--surface)] text-[var(--foreground)]" style={{ borderColor: 'var(--glass-border)' }}>
+            <SelectValue placeholder="All Categories" />
+          </SelectTrigger>
+          <SelectContent className="bg-[var(--dropdown-bg)] border-[var(--glass-border)] text-[var(--foreground)] z-[60]">
+            <SelectItem value="all">All Categories</SelectItem>
+            {CATEGORIES.map((c) => <SelectItem key={c} value={c}>{c}</SelectItem>)}
+          </SelectContent>
+        </Select>
 
         {/* Type Filter Pill */}
-        <select
+        <Select
           value={filters.type}
-          onChange={(e) => { setFilters({ type: e.target.value as any }); setCurrentPage(1); }}
-          className="px-4 py-2.5 rounded-xl text-sm border bg-transparent cursor-pointer"
-          style={{ borderColor: 'var(--glass-border)' }}
+          onValueChange={(val) => { setFilters({ type: val as any }); setCurrentPage(1); }}
         >
-          <option value="all">All Types</option>
-          <option value="income">Income</option>
-          <option value="expense">Expense</option>
-        </select>
+          <SelectTrigger className="w-[140px] h-[40px] rounded-xl text-sm border bg-[var(--surface)] text-[var(--foreground)]" style={{ borderColor: 'var(--glass-border)' }}>
+            <SelectValue placeholder="All Types" />
+          </SelectTrigger>
+          <SelectContent className="bg-[var(--dropdown-bg)] border-[var(--glass-border)] text-[var(--foreground)] z-[60]">
+            <SelectItem value="all">All Types</SelectItem>
+            <SelectItem value="income">Income</SelectItem>
+            <SelectItem value="expense">Expense</SelectItem>
+          </SelectContent>
+        </Select>
 
         {/* Search */}
         <div className="relative flex-1 min-w-[200px]">
@@ -288,21 +298,24 @@ export default function TransactionList() {
         {/* Sort */}
         <div className="flex items-center gap-2">
           <span className="text-xs text-[var(--muted)] uppercase tracking-wider hidden sm:inline">Sort By</span>
-          <select
+          <Select
             value={`${filters.sortBy}-${filters.sortOrder}`}
-            onChange={(e) => {
-              const [sortBy, sortOrder] = e.target.value.split('-') as [any, any];
+            onValueChange={(val) => {
+              const [sortBy, sortOrder] = val.split('-') as [any, any];
               setFilters({ sortBy, sortOrder });
             }}
-            className="px-3 py-2.5 rounded-xl text-sm border bg-transparent cursor-pointer"
-            style={{ borderColor: 'var(--glass-border)' }}
           >
-            <option value="date-desc">Date (Newest)</option>
-            <option value="date-asc">Date (Oldest)</option>
-            <option value="amount-desc">Amount (High)</option>
-            <option value="amount-asc">Amount (Low)</option>
-            <option value="category-asc">Category (A-Z)</option>
-          </select>
+            <SelectTrigger className="w-[160px] h-[40px] rounded-xl text-sm border bg-transparent text-[var(--foreground)]" style={{ borderColor: 'var(--glass-border)' }}>
+              <SelectValue placeholder="Sort By" />
+            </SelectTrigger>
+            <SelectContent className="bg-[var(--dropdown-bg)] border-[var(--glass-border)] text-[var(--foreground)] z-[60]">
+              <SelectItem value="date-desc">Date (Newest)</SelectItem>
+              <SelectItem value="date-asc">Date (Oldest)</SelectItem>
+              <SelectItem value="amount-desc">Amount (High)</SelectItem>
+              <SelectItem value="amount-asc">Amount (Low)</SelectItem>
+              <SelectItem value="category-asc">Category (A-Z)</SelectItem>
+            </SelectContent>
+          </Select>
         </div>
 
         {/* Export */}

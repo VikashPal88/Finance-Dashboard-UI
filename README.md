@@ -42,10 +42,11 @@ npm run dev
 - **Sort** by date, amount, or category (asc/desc)
 - **Pagination** with 10 items per page
 - **Add / Edit / Delete** transactions (Admin role only)
-- **Custom Calendar Picker** — Custom-built date picker replacing native HTML input
-- **Category Pill Selector** — Visual pill-based category selection in transaction form
-- **Account Selector** — Choose which account to associate with each transaction
-- **CSV Export** — Download filtered transactions as CSV
+- **Shadcn Integrations** — Dropdowns styled beautifully utilizing `shadcn/ui` `<Select>`.
+- **Custom Popover Calendar** — Premium Shadcn `Popover` + `Calendar` replacing native HTML date picker in transaction forms.
+- **Category Pill Selector** — Visual pill-based category selection in transaction form.
+- **Account Selector** — Choose which account to associate with each transaction.
+- **CSV Export** — Download filtered transactions as CSV.
 
 ### 🏦 Accounts System (NEW)
 - **Multiple Accounts** — Create accounts for different uses (Bills, Food, Travel, etc.)
@@ -65,6 +66,7 @@ npm run dev
 - No backend required — roles are simulated on the frontend
 
 ### 📈 Insights Section
+- **Dynamic Time Filters** — Interact with the bar chart modifying timeframe filters (1-Week, 1-Month, 6-Months, 1-Year) dynamically grouping data by day or month. 
 - **Highest Spending Category** — Identifies where most money goes
 - **Average Daily Spend** — Calculated across all expense data
 - **Income : Expense Ratio** — Financial health indicator
@@ -90,9 +92,10 @@ npm run dev
 
 | Technology | Purpose |
 |---|---|
-| **Next.js 16** (App Router) | Framework & routing |
-| **TypeScript** | Type safety |
-| **Tailwind CSS 4** | Utility-first styling |
+| **Next.js 16.2** (App Router) | Native page routing, Server boundary foundations & Turbopack |
+| **TypeScript 5** | Strict type safety across components and state |
+| **Tailwind CSS 4** | Ultra-modern styling engine using native `@theme inline` |
+| **Shadcn UI** | High-end accessible component primitives (`Popover`, `Select`, `Calendar`) |
 | **Zustand** | State management (with persist middleware) |
 | **Recharts** | Data visualizations (charts) |
 | **Framer Motion** | Animations & transitions |
@@ -138,7 +141,9 @@ src/
 - Filters include account-based filtering alongside category and type
 
 ### UI Architecture
-- Single-page app feel using Zustand's `activePage` state instead of Next.js file-based routing
+- **Next.js App Router** implementation for authentic URL routing (`/settings`, `/insights`, `/transactions`, etc.) rather than simulated SPA state routing.
+- **Tailwind CSS v4** architecture dynamically mapping CSS custom properties inside `:root` (for Dark mode) and `[data-theme="light"]` (for Light mode) through `@theme inline` to prevent React hydration issues.
+- Integrated **Shadcn UI** for elegant Form interactions, Popovers, and Dropdown management.
 - Components are organized by feature domain (dashboard, transactions, insights, accounts)
 - Custom reusable UI components: `ToggleSwitch`, `RoleToggle`, `MiniCalendar`, `Badge`, `EmptyState`
 - Role toggle uses Framer Motion `layoutId` for smooth sliding animation

@@ -69,11 +69,9 @@ export default function Sidebar() {
 
       {/* Sidebar */}
       <aside
-        className={`fixed top-0 left-0 z-40 h-full flex flex-col border-r transition-all duration-300 ${
-          sidebarOpen ? 'translate-x-0 w-64' : '-translate-x-full w-64 md:translate-x-0 md:w-20'
-        }`}
+        className={`fixed top-0 left-0 z-40 h-full flex flex-col border-r transition-all duration-300 bg-[var(--dropdown-bg)] md:bg-[var(--sidebar-bg)] ${sidebarOpen ? 'translate-x-0 w-64' : '-translate-x-full w-64 md:translate-x-0 md:w-20'
+          }`}
         style={{
-          backgroundColor: 'var(--sidebar-bg)',
           borderColor: 'var(--glass-border)',
         }}
       >
@@ -143,11 +141,10 @@ export default function Sidebar() {
                 key={item.route}
                 href={item.route}
                 onClick={handleNavClick}
-                className={`relative w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 group ${
-                  isActive
+                className={`relative w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 group ${isActive
                     ? 'bg-primary/10 text-primary'
                     : 'text-[var(--muted)] hover:bg-[var(--surface-hover)] hover:text-[var(--foreground)]'
-                }`}
+                  }`}
               >
                 {isActive && (
                   <motion.div
@@ -189,9 +186,8 @@ export default function Sidebar() {
           {/* Theme Toggle */}
           <button
             onClick={toggleTheme}
-            className={`flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm transition-all hover:bg-[var(--surface-hover)] ${
-              sidebarOpen ? 'w-full' : 'w-full justify-center'
-            }`}
+            className={`flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm transition-all hover:bg-[var(--surface-hover)] ${sidebarOpen ? 'w-full' : 'w-full justify-center'
+              }`}
           >
             {theme === 'dark' ? (
               <Sun size={18} className="text-amber-400 flex-shrink-0" />
@@ -214,9 +210,8 @@ export default function Sidebar() {
 
           {/* Support */}
           <button
-            className={`flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm transition-all hover:bg-[var(--surface-hover)] text-[var(--muted)] ${
-              sidebarOpen ? 'w-full' : 'w-full justify-center'
-            }`}
+            className={`flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm transition-all hover:bg-[var(--surface-hover)] text-[var(--muted)] ${sidebarOpen ? 'w-full' : 'w-full justify-center'
+              }`}
           >
             <HelpCircle size={18} className="flex-shrink-0" />
             <AnimatePresence>
@@ -236,9 +231,8 @@ export default function Sidebar() {
           {/* Sign Out */}
           <button
             onClick={() => setShowSignOut(true)}
-            className={`flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm transition-all hover:bg-expense/10 text-[var(--muted)] hover:text-expense ${
-              sidebarOpen ? 'w-full' : 'w-full justify-center'
-            }`}
+            className={`flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm transition-all hover:bg-expense/10 text-[var(--muted)] hover:text-expense ${sidebarOpen ? 'w-full' : 'w-full justify-center'
+              }`}
           >
             <LogOut size={18} className="flex-shrink-0" />
             <AnimatePresence>

@@ -7,6 +7,7 @@ import TopCategories from '@/components/insights/TopCategories';
 import MonthlyComparison from '@/components/insights/MonthlyComparison';
 import SpendingInsights from '@/components/insights/SpendingInsights';
 import ExpenseTrendChart from '@/components/insights/ExpenseTrendChart';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
 export default function InsightsPage() {
   const accounts = useStore((s) => s.accounts);
@@ -25,17 +26,18 @@ export default function InsightsPage() {
             Deep dive into your financial habits and trends.
           </p>
         </div>
-        <select
-          value={accountId}
-          onChange={(e) => setAccountId(e.target.value)}
-          className="px-4 py-2.5 rounded-xl text-sm border bg-[var(--surface)] text-[var(--foreground)] outline-none min-w-[200px]"
-          style={{ borderColor: 'var(--glass-border)' }}
-        >
-          <option value="all">All Accounts</option>
-          {accounts.map(acc => (
-            <option key={acc.id} value={acc.id}>{acc.icon} {acc.name}</option>
-          ))}
-        </select>
+        
+        <Select value={accountId} onValueChange={setAccountId}>
+          <SelectTrigger className="w-[200px] h-[44px] rounded-xl text-sm border bg-[var(--surface)] text-[var(--foreground)]" style={{ borderColor: 'var(--glass-border)' }}>
+            <SelectValue placeholder="All Accounts" />
+          </SelectTrigger>
+          <SelectContent className="bg-[var(--dropdown-bg)] border-[var(--glass-border)] text-[var(--foreground)]">
+            <SelectItem value="all">All Accounts</SelectItem>
+            {accounts.map(acc => (
+              <SelectItem key={acc.id} value={acc.id}>{acc.icon} {acc.name}</SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
       </div>
 
       <SpendingInsights accountId={accountId} />

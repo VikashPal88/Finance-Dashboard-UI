@@ -5,8 +5,8 @@ import { defaultTransactions, defaultAccounts, EXPENSE_CATEGORIES, INCOME_CATEGO
 import { generateId } from '@/utils/formatters';
 
 const initialCategories: CustomCategory[] = [
-  ...EXPENSE_CATEGORIES.map((c) => ({ id: `cat-${c}`, name: c, type: 'expense' as TransactionType, color: CATEGORY_COLORS[c] || '#6b7280' })),
-  ...INCOME_CATEGORIES.map((c) => ({ id: `cat-${c}`, name: c, type: 'income' as TransactionType, color: CATEGORY_COLORS[c] || '#6b7280' })),
+  ...EXPENSE_CATEGORIES.map((c) => ({ id: `cat-${c}-expense`, name: c, type: 'expense' as TransactionType, color: CATEGORY_COLORS[c] || '#6b7280' })),
+  ...INCOME_CATEGORIES.map((c) => ({ id: `cat-${c}-income`, name: c, type: 'income' as TransactionType, color: CATEGORY_COLORS[c] || '#6b7280' })),
 ];
 
 interface AppState {
