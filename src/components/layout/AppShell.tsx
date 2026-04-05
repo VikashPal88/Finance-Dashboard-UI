@@ -1,26 +1,26 @@
-'use client';
+"use client";
 
-import { useEffect } from 'react';
-import { usePathname } from 'next/navigation';
-import { AnimatePresence, motion } from 'framer-motion';
-import Sidebar from './Sidebar';
-import Header from './Header';
-import { useStore } from '@/store/useStore';
+import { useEffect } from "react";
+import { usePathname } from "next/navigation";
+import { AnimatePresence, motion } from "framer-motion";
+import Sidebar from "./Sidebar";
+import Header from "./Header";
+import { useStore } from "@/store/useStore";
 
 export default function AppShell({ children }: { children: React.ReactNode }) {
   const { theme, sidebarOpen } = useStore();
   const pathname = usePathname();
 
   useEffect(() => {
-    document.documentElement.setAttribute('data-theme', theme);
+    document.documentElement.setAttribute("data-theme", theme);
   }, [theme]);
 
   return (
-    <div className="flex h-[100dvh] overflow-hidden">
+    <div className="flex h-[100dvh]">
       <Sidebar />
       <div
         className={`flex flex-col flex-1 min-w-0 transition-all duration-300 ${
-          sidebarOpen ? 'md:ml-64' : 'md:ml-20'
+          sidebarOpen ? "md:ml-64" : "md:ml-20"
         }`}
       >
         <Header />
