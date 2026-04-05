@@ -87,7 +87,7 @@ export default function ExpenseTrendChart({ accountId }: { accountId?: string })
             />
             <Tooltip content={<CustomTooltip />} cursor={{ stroke: 'var(--glass-border)' }} />
             <Line 
-              type="Monotone" 
+              type="monotone" 
               dataKey="expenses" 
               name="Expenses"
               stroke="#ef4444" 

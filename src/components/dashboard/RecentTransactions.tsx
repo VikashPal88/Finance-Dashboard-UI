@@ -6,10 +6,11 @@ import { useStore } from '@/store/useStore';
 import { formatCurrency, formatDateShort } from '@/utils/formatters';
 import { CATEGORY_COLORS } from '@/data/mockData';
 import Badge from '@/components/common/Badge';
+import { useRouter } from 'next/navigation';
 
 export default function RecentTransactions() {
   const transactions = useStore((s) => s.transactions);
-  const setActivePage = useStore((s) => s.setActivePage);
+  const router = useRouter();
 
   const recent = [...transactions]
     .sort((a, b) => b.date.localeCompare(a.date))
@@ -25,7 +26,7 @@ export default function RecentTransactions() {
       <div className="flex items-center justify-between mb-4">
         <h3 className="text-sm font-semibold">Recent Transactions</h3>
         <button
-          onClick={() => setActivePage('transactions')}
+          onClick={() => router.push('/transactions')}
           className="text-xs text-primary hover:text-primary-hover transition-colors"
         >
           View all →

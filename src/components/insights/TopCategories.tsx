@@ -21,7 +21,7 @@ export default function TopCategories({ accountId }: { accountId?: string }) {
     ? allTransactions.filter(t => t.accountId === accountId)
     : allTransactions;
 
-  const breakdown = getCategoryBreakdown(transactions, 'expense').slice(0, 5);
+  const breakdown = getCategoryBreakdown(transactions).slice(0, 5);
 
   const CustomTooltip = ({ active, payload }: any) => {
     if (!active || !payload?.length) return null;

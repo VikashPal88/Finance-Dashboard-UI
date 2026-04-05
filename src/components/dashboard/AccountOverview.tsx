@@ -4,9 +4,11 @@ import { motion } from 'framer-motion';
 import { Wallet, ArrowRight, AlertTriangle } from 'lucide-react';
 import { useStore } from '@/store/useStore';
 import { formatCurrency } from '@/utils/formatters';
+import { useRouter } from 'next/navigation';
 
 export default function AccountOverview() {
-  const { accounts, transactions, setActivePage } = useStore();
+  const { accounts, transactions } = useStore();
+  const router = useRouter();
 
   const getMonthlySpent = (accountId: string) => {
     // For assignment purposes, calculate against all expenses so it's always responsive regardless of date
@@ -28,7 +30,7 @@ export default function AccountOverview() {
           <h3 className="text-sm font-semibold">Account Overview</h3>
         </div>
         <button
-          onClick={() => setActivePage('accounts')}
+          onClick={() => router.push('/accounts')}
           className="flex items-center gap-1 text-xs text-primary hover:text-primary-hover transition-colors"
         >
           Manage <ArrowRight size={12} />
@@ -49,7 +51,7 @@ export default function AccountOverview() {
               animate={{ opacity: 1, scale: 1 }}
               transition={{ delay: 0.5 + index * 0.05 }}
               whileHover={{ y: -2 }}
-              onClick={() => setActivePage('accounts')}
+              onClick={() => router.push('/accounts')}
               className="p-4 rounded-xl transition-all cursor-pointer group hover:bg-[var(--surface)] hover:shadow-lg border border-[var(--glass-border)]"
             >
               <div className="flex items-center gap-3 mb-3">
