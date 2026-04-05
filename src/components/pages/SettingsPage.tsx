@@ -404,7 +404,7 @@ export default function SettingsPage() {
                     {isAdmin && (
                       <button
                         onClick={() => { if (confirm('Delete this category?')) deleteCategory(cat.id); }}
-                        className="p-1.5 rounded-md text-[var(--muted)] hover:text-expense hover:bg-expense/10 transition-colors opacity-0 group-hover:opacity-100 shrink-0"
+                        className="p-1.5 rounded-md text-[var(--muted)] hover:text-expense hover:bg-expense/10 transition-colors shrink-0"
                         title="Delete category"
                       >
                         <Trash2 size={14} />

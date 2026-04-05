@@ -29,7 +29,9 @@ export default function InsightsPage() {
         
         <Select value={accountId} onValueChange={setAccountId}>
           <SelectTrigger className="w-[200px] h-[44px] rounded-xl text-sm border bg-[var(--surface)] text-[var(--foreground)]" style={{ borderColor: 'var(--glass-border)' }}>
-            <SelectValue placeholder="All Accounts" />
+            <SelectValue placeholder="All Accounts">
+              {accountId === 'all' ? 'All Accounts' : accounts.find(a => a.id === accountId)?.name || 'All Accounts'}
+            </SelectValue>
           </SelectTrigger>
           <SelectContent className="bg-[var(--dropdown-bg)] border-[var(--glass-border)] text-[var(--foreground)]">
             <SelectItem value="all">All Accounts</SelectItem>

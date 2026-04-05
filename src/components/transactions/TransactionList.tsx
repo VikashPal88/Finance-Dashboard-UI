@@ -27,6 +27,7 @@ import Badge from '@/components/ui/Badge';
 import EmptyState from '@/components/ui/EmptyState';
 import TransactionModal from './TransactionModal';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 
 const ITEMS_PER_PAGE = 10;
 
@@ -40,63 +41,40 @@ function RowOptions({
   alignMenu?: 'right' | 'left';
 }) {
   const [open, setOpen] = useState(false);
-  const ref = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    const handleClick = (e: MouseEvent) => {
-      if (ref.current && !ref.current.contains(e.target as Node)) {
-        setOpen(false);
-      }
-    };
-    if (open) document.addEventListener('mousedown', handleClick);
-    return () => document.removeEventListener('mousedown', handleClick);
-  }, [open]);
 
   return (
-    <div className="relative isolate" ref={ref}>
-      <button
-        onClick={() => setOpen(!open)}
-        className="p-1.5 rounded-lg hover:bg-[var(--surface-hover)] transition-colors opacity-0 group-hover:opacity-100"
+    <Popover open={open} onOpenChange={setOpen}>
+      <PopoverTrigger asChild>
+        <button className="p-1.5 rounded-lg hover:bg-[var(--surface-hover)] transition-colors">
+          <MoreHorizontal size={16} className="text-[var(--muted)]" />
+        </button>
+      </PopoverTrigger>
+      <PopoverContent
+        align={alignMenu === 'left' ? 'start' : 'end'}
+        className="w-32 p-1 bg-[var(--dropdown-bg)] border-[var(--glass-border)] z-[60] shadow-xl rounded-xl border"
       >
-        <MoreHorizontal size={16} className="text-[var(--muted)]" />
-      </button>
-      <AnimatePresence>
-        {open && (
-          <motion.div
-            initial={{ opacity: 0, scale: 0.95, y: -5 }}
-            animate={{ opacity: 1, scale: 1, y: 0 }}
-            exit={{ opacity: 0, scale: 0.95, y: -5 }}
-            transition={{ duration: 0.1 }}
-            className={`absolute z-50 top-full mt-1 w-32 rounded-xl border shadow-xl bg-[var(--dropdown-bg)] ${alignMenu === 'left' ? 'left-0' : 'right-0'
-              }`}
-            style={{ borderColor: 'var(--glass-border)' }}
-          >
-            <div className="p-1 min-w-[120px]">
-              <button
-                onClick={() => {
-                  setOpen(false);
-                  onEdit();
-                }}
-                className="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-sm transition-colors hover:bg-[var(--surface-hover)] text-[var(--foreground)]"
-              >
-                <Pencil size={14} className="text-[var(--muted)]" />
-                Edit
-              </button>
-              <button
-                onClick={() => {
-                  setOpen(false);
-                  onDelete();
-                }}
-                className="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-sm transition-colors hover:bg-expense/10 text-expense"
-              >
-                <Trash2 size={14} />
-                Delete
-              </button>
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
-    </div>
+        <button
+          onClick={() => {
+            setOpen(false);
+            onEdit();
+          }}
+          className="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-sm transition-colors hover:bg-[var(--surface-hover)] text-[var(--foreground)]"
+        >
+          <Pencil size={14} className="text-[var(--muted)]" />
+          Edit
+        </button>
+        <button
+          onClick={() => {
+            setOpen(false);
+            onDelete();
+          }}
+          className="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-sm transition-colors hover:bg-expense/10 text-expense"
+        >
+          <Trash2 size={14} />
+          Delete
+        </button>
+      </PopoverContent>
+    </Popover>
   );
 }
 
