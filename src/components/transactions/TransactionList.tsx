@@ -234,9 +234,13 @@ export default function TransactionList() {
           onValueChange={(val) => { setFilters({ accountId: val as any }); setCurrentPage(1); }}
         >
           <SelectTrigger className="w-[180px] h-[40px] rounded-xl text-sm border bg-[var(--surface)] text-[var(--foreground)]" style={{ borderColor: 'var(--glass-border)' }}>
-            <SelectValue placeholder="All Accounts" />
+            <SelectValue placeholder="All Accounts">
+              {filters.accountId === 'all' || !filters.accountId
+                ? 'All Accounts'
+                : accounts.find(a => a.id === filters.accountId)?.name || 'All Accounts'}
+            </SelectValue>
           </SelectTrigger>
-          <SelectContent className="bg-[var(--dropdown-bg)] border-[var(--glass-border)] text-[var(--foreground)] z-[60]">
+          <SelectContent className="bg-[var(--dropdown-bg)] border-[var(--glass-border)] text-[var(--foreground)] z-[60] p-1">
             <SelectItem value="all">All Accounts</SelectItem>
             {accounts.map((a) => <SelectItem key={a.id} value={a.id}>{a.icon} {a.name}</SelectItem>)}
           </SelectContent>
@@ -248,9 +252,11 @@ export default function TransactionList() {
           onValueChange={(val) => { setFilters({ category: val as any }); setCurrentPage(1); }}
         >
           <SelectTrigger className="w-[180px] h-[40px] rounded-xl text-sm border bg-[var(--surface)] text-[var(--foreground)]" style={{ borderColor: 'var(--glass-border)' }}>
-            <SelectValue placeholder="All Categories" />
+            <SelectValue placeholder="All Categories">
+              {filters.category === 'all' || !filters.category ? 'All Categories' : filters.category}
+            </SelectValue>
           </SelectTrigger>
-          <SelectContent className="bg-[var(--dropdown-bg)] border-[var(--glass-border)] text-[var(--foreground)] z-[60]">
+          <SelectContent className="bg-[var(--dropdown-bg)] border-[var(--glass-border)] text-[var(--foreground)] z-[60] p-1">
             <SelectItem value="all">All Categories</SelectItem>
             {CATEGORIES.map((c) => <SelectItem key={c} value={c}>{c}</SelectItem>)}
           </SelectContent>
@@ -262,9 +268,11 @@ export default function TransactionList() {
           onValueChange={(val) => { setFilters({ type: val as any }); setCurrentPage(1); }}
         >
           <SelectTrigger className="w-[140px] h-[40px] rounded-xl text-sm border bg-[var(--surface)] text-[var(--foreground)]" style={{ borderColor: 'var(--glass-border)' }}>
-            <SelectValue placeholder="All Types" />
+            <SelectValue placeholder="All Types">
+              {filters.type === 'income' ? 'Income' : filters.type === 'expense' ? 'Expense' : 'All Types'}
+            </SelectValue>
           </SelectTrigger>
-          <SelectContent className="bg-[var(--dropdown-bg)] border-[var(--glass-border)] text-[var(--foreground)] z-[60]">
+          <SelectContent className="bg-[var(--dropdown-bg)] border-[var(--glass-border)] text-[var(--foreground)] z-[60] p-1">
             <SelectItem value="all">All Types</SelectItem>
             <SelectItem value="income">Income</SelectItem>
             <SelectItem value="expense">Expense</SelectItem>
@@ -306,9 +314,16 @@ export default function TransactionList() {
             }}
           >
             <SelectTrigger className="w-[160px] h-[40px] rounded-xl text-sm border bg-transparent text-[var(--foreground)]" style={{ borderColor: 'var(--glass-border)' }}>
-              <SelectValue placeholder="Sort By" />
+              <SelectValue>
+                {`${filters.sortBy}-${filters.sortOrder}` === 'date-desc' ? 'Date (Newest)' :
+                  `${filters.sortBy}-${filters.sortOrder}` === 'date-asc' ? 'Date (Oldest)' :
+                    `${filters.sortBy}-${filters.sortOrder}` === 'amount-desc' ? 'Amount (High)' :
+                      `${filters.sortBy}-${filters.sortOrder}` === 'amount-asc' ? 'Amount (Low)' :
+                        `${filters.sortBy}-${filters.sortOrder}` === 'category-asc' ? 'Category (A-Z)' :
+                          'Sort By'}
+              </SelectValue>
             </SelectTrigger>
-            <SelectContent className="bg-[var(--dropdown-bg)] border-[var(--glass-border)] text-[var(--foreground)] z-[60]">
+            <SelectContent className="bg-[var(--dropdown-bg)] border-[var(--glass-border)] text-[var(--foreground)] z-[60] p-1">
               <SelectItem value="date-desc">Date (Newest)</SelectItem>
               <SelectItem value="date-asc">Date (Oldest)</SelectItem>
               <SelectItem value="amount-desc">Amount (High)</SelectItem>
@@ -480,8 +495,8 @@ export default function TransactionList() {
                   <button
                     onClick={() => setCurrentPage(page)}
                     className={`w-8 h-8 rounded-lg text-xs font-medium transition-all ${page === currentPage
-                        ? 'bg-primary text-white'
-                        : 'hover:bg-[var(--surface-hover)] text-[var(--muted)]'
+                      ? 'bg-primary text-white'
+                      : 'hover:bg-[var(--surface-hover)] text-[var(--muted)]'
                       }`}
                   >
                     {page}

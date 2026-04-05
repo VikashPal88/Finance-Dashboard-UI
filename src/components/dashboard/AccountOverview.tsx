@@ -11,9 +11,9 @@ export default function AccountOverview() {
   const router = useRouter();
 
   const getMonthlySpent = (accountId: string) => {
-    // For assignment purposes, calculate against all expenses so it's always responsive regardless of date
+    const currentMonth = new Date().toISOString().substring(0, 7);
     return transactions
-      .filter((t) => t.type === 'expense' && t.accountId === accountId)
+      .filter((t) => t.type === 'expense' && t.accountId === accountId && t.date.substring(0, 7) === currentMonth)
       .reduce((s, t) => s + t.amount, 0);
   };
 
