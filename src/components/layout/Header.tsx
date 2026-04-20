@@ -16,7 +16,6 @@ import {
   X,
 } from 'lucide-react';
 import { useStore } from '@/store/useStore';
-import RoleToggle from '@/components/ui/RoleToggle';
 import SignOutModal from '@/components/ui/SignOutModal';
 
 const pageLabels: Record<string, { title: string; subtitle: string }> = {
@@ -102,11 +101,6 @@ export default function Header() {
 
       {/* Right Section */}
       <div className="flex items-center gap-2 ml-auto">
-        {/* Role Toggle - Desktop */}
-        <div className="hidden lg:block">
-          <RoleToggle />
-        </div>
-
         {/* Add Transaction (Quick) */}
         <motion.button
           whileHover={{ scale: 1.05 }}
@@ -226,12 +220,6 @@ export default function Header() {
                       <p className="text-xs text-[var(--muted)]">vs700034@gmail.com</p>
                     </div>
                   </div>
-                </div>
-
-                {/* Mobile Role Toggle */}
-                <div className="p-3 border-b lg:hidden" style={{ borderColor: 'var(--glass-border)' }}>
-                  <p className="text-[10px] font-semibold uppercase tracking-wider text-[var(--muted)] mb-2">Role</p>
-                  <RoleToggle />
                 </div>
 
                 {/* Menu items */}

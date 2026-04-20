@@ -6,8 +6,16 @@ import { useStore } from '@/store/useStore';
 import { calculateTotalIncome, calculateTotalExpenses, calculateBalance, calculateSavingsRate } from '@/utils/calculations';
 import { formatCurrency, formatPercentage } from '@/utils/formatters';
 
-export default function SummaryCards() {
-  const transactions = useStore((s) => s.transactions);
+
+
+export default function SummaryCards({ accounts }: { accounts: any[] }) {
+  const transactions = accounts?.flatMap((a: any) => 
+    a.transactions?.map((t: any) => ({
+      ...t,
+      type: t.type.toLowerCase(),
+      accountId: a.id
+    })) || []
+  ) || [];
 
   const totalBalance = calculateBalance(transactions);
   const totalIncome = calculateTotalIncome(transactions);

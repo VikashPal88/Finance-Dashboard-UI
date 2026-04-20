@@ -1,5 +1,6 @@
 'use client';
 
+import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import {
   LineChart,
@@ -27,6 +28,9 @@ export default function ExpenseTrendChart({ accountId }: { accountId?: string })
       expenses: s.expenses,
       income: s.income
     }));
+
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => setMounted(true), []);
 
   const CustomTooltip = ({ active, payload, label }: any) => {
     if (!active || !payload?.length) return null;
@@ -59,53 +63,55 @@ export default function ExpenseTrendChart({ accountId }: { accountId?: string })
       </div>
 
       <div className="h-[300px] w-full">
-        <ResponsiveContainer width="100%" height="100%">
-          <LineChart data={data} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
-            <defs>
-              <linearGradient id="colorExpense" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="5%" stopColor="#ef4444" stopOpacity={0.8}/>
-                <stop offset="95%" stopColor="#ef4444" stopOpacity={0}/>
-              </linearGradient>
-              <linearGradient id="colorIncome" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="5%" stopColor="#22c55e" stopOpacity={0.8}/>
-                <stop offset="95%" stopColor="#22c55e" stopOpacity={0}/>
-              </linearGradient>
-            </defs>
-            <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="var(--glass-border)" />
-            <XAxis 
-              dataKey="name" 
-              axisLine={false} 
-              tickLine={false} 
-              tick={{ fontSize: 11, fill: 'var(--muted)' }} 
-              dy={10}
-            />
-            <YAxis 
-              axisLine={false} 
-              tickLine={false} 
-              tick={{ fontSize: 11, fill: 'var(--muted)' }} 
-              tickFormatter={(val) => `₹${val / 1000}k`}
-            />
-            <Tooltip content={<CustomTooltip />} cursor={{ stroke: 'var(--glass-border)' }} />
-            <Line 
-              type="monotone" 
-              dataKey="expenses" 
-              name="Expenses"
-              stroke="#ef4444" 
-              strokeWidth={3}
-              dot={{ r: 4, strokeWidth: 2, fill: 'var(--surface)' }}
-              activeDot={{ r: 6, fill: '#ef4444', strokeWidth: 0 }}
-            />
-            <Line 
-              type="monotone" 
-              dataKey="income" 
-              name="Income"
-              stroke="#22c55e" 
-              strokeWidth={3}
-              dot={{ r: 4, strokeWidth: 2, fill: 'var(--surface)' }}
-              activeDot={{ r: 6, fill: '#22c55e', strokeWidth: 0 }}
-            />
-          </LineChart>
-        </ResponsiveContainer>
+        {mounted && (
+          <ResponsiveContainer width="100%" height="100%" minWidth={0}>
+            <LineChart data={data} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+              <defs>
+                <linearGradient id="colorExpense" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="5%" stopColor="#ef4444" stopOpacity={0.8}/>
+                  <stop offset="95%" stopColor="#ef4444" stopOpacity={0}/>
+                </linearGradient>
+                <linearGradient id="colorIncome" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="5%" stopColor="#22c55e" stopOpacity={0.8}/>
+                  <stop offset="95%" stopColor="#22c55e" stopOpacity={0}/>
+                </linearGradient>
+              </defs>
+              <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="var(--glass-border)" />
+              <XAxis 
+                dataKey="name" 
+                axisLine={false} 
+                tickLine={false} 
+                tick={{ fontSize: 11, fill: 'var(--muted)' }} 
+                dy={10}
+              />
+              <YAxis 
+                axisLine={false} 
+                tickLine={false} 
+                tick={{ fontSize: 11, fill: 'var(--muted)' }} 
+                tickFormatter={(val) => `₹${val / 1000}k`}
+              />
+              <Tooltip content={<CustomTooltip />} cursor={{ stroke: 'var(--glass-border)' }} />
+              <Line 
+                type="monotone" 
+                dataKey="expenses" 
+                name="Expenses"
+                stroke="#ef4444" 
+                strokeWidth={3}
+                dot={{ r: 4, strokeWidth: 2, fill: 'var(--surface)' }}
+                activeDot={{ r: 6, fill: '#ef4444', strokeWidth: 0 }}
+              />
+              <Line 
+                type="monotone" 
+                dataKey="income" 
+                name="Income"
+                stroke="#22c55e" 
+                strokeWidth={3}
+                dot={{ r: 4, strokeWidth: 2, fill: 'var(--surface)' }}
+                activeDot={{ r: 6, fill: '#22c55e', strokeWidth: 0 }}
+              />
+            </LineChart>
+          </ResponsiveContainer>
+        )}
       </div>
     </motion.div>
   );

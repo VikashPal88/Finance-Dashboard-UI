@@ -6,8 +6,14 @@ import { useStore } from '@/store/useStore';
 import { formatCurrency } from '@/utils/formatters';
 import { useRouter } from 'next/navigation';
 
-export default function AccountOverview() {
-  const { accounts, transactions } = useStore();
+export default function AccountOverview({ accounts = [] }: { accounts?: any[] }) {
+  const transactions = accounts?.flatMap((a: any) => 
+    a.transactions?.map((t: any) => ({
+      ...t,
+      type: t.type.toLowerCase(),
+      accountId: a.id
+    })) || []
+  ) || [];
   const router = useRouter();
 
   const getMonthlySpent = (accountId: string) => {
@@ -90,8 +96,8 @@ export default function AccountOverview() {
                         backgroundColor: budgetPercent >= 100
                           ? '#ef4444'
                           : isWarning
-                          ? '#f59e0b'
-                          : account.color,
+                            ? '#f59e0b'
+                            : account.color,
                       }}
                     />
                   </div>

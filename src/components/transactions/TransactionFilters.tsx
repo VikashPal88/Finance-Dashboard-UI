@@ -2,14 +2,29 @@
 
 import { Search, SlidersHorizontal, X } from 'lucide-react';
 import { useStore } from '@/store/useStore';
-import { CATEGORIES } from '@/data/mockData';
+import { CategoryItem } from '@/lib/categories';
 import { motion, AnimatePresence } from 'framer-motion';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 
 export default function TransactionFilters() {
   const { filters, setFilters, resetFilters } = useStore();
   const [showFilters, setShowFilters] = useState(false);
+  const [categories, setCategories] = useState<CategoryItem[]>([]);
 
+  useEffect(() => {
+    const fetchCategories = async () => {
+      try {
+        const res = await fetch('/api/categories');
+        if (res.ok) {
+          const data = await res.json();
+          setCategories(data);
+        }
+      } catch (err) {
+        console.error('Failed to fetch categories', err);
+      }
+    };
+    fetchCategories();
+  }, []);
   const hasActiveFilters = filters.category !== 'all' || filters.type !== 'all';
 
   return (
@@ -73,8 +88,8 @@ export default function TransactionFilters() {
                   className="px-3 py-2 rounded-lg text-sm min-w-[160px]"
                 >
                   <option value="all">All Categories</option>
-                  {CATEGORIES.map((c) => (
-                    <option key={c} value={c}>{c}</option>
+                  {categories.map((c) => (
+                    <option key={c.id} value={c.name}>{c.name}</option>
                   ))}
                 </select>
               </div>

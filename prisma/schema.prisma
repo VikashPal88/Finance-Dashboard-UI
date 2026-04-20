@@ -1,0 +1,187 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mongodb"
+  url      = env("DATABASE_URL")
+}
+
+// ─── Auth.js Models ──────────────────────────────────────────────────────────
+
+model User {
+  id            String    @id @default(auto()) @map("_id") @db.ObjectId
+  email         String    @unique
+  username      String?
+  name          String?
+  emailVerified DateTime?
+  image         String?
+  password      String? // Hashed password for credentials auth
+  is_admin      Boolean   @default(false)
+
+  // Auth.js relations
+  authAccounts AuthAccount[]
+  sessions     Session[]
+
+  // App relations
+  financialAccounts FinancialAccount[]
+  transactions      Transaction[]
+  categories        Category[]
+  budgets           Budget[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("users")
+}
+
+model AuthAccount {
+  id                String  @id @default(auto()) @map("_id") @db.ObjectId
+  userId            String  @db.ObjectId
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String? @db.String
+  access_token      String? @db.String
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String? @db.String
+  session_state     String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+  @@map("auth_accounts")
+}
+
+model Session {
+  id           String   @id @default(auto()) @map("_id") @db.ObjectId
+  sessionToken String   @unique
+  userId       String   @db.ObjectId
+  expires      DateTime
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("sessions")
+}
+
+model VerificationToken {
+  id         String   @id @default(auto()) @map("_id") @db.ObjectId
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+  @@map("verification_tokens")
+}
+
+// ─── Application Models ──────────────────────────────────────────────────────
+
+model FinancialAccount {
+  id              String        @id @default(auto()) @map("_id") @db.ObjectId
+  name            String
+  type            AccountType
+  balance         Float         @default(0)
+  monthlyBudget   Float         @default(0) // e.g. 50000 for ₹50,000 monthly budget
+  budgetAlertSent DateTime?
+  isDefault       Boolean       @default(false)
+  icon            String        @default("💰")
+  color           String        @default("#6366f1")
+  userId          String        @db.ObjectId
+  user            User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  transactions    Transaction[]
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+
+  @@index([userId])
+  @@map("financial_accounts")
+}
+
+model Transaction {
+  id                String             @id @default(auto()) @map("_id") @db.ObjectId
+  type              TransactionType
+  amount            Float
+  description       String?
+  date              DateTime
+  category          String
+  receiptUrl        String?
+  isRecurring       Boolean            @default(false)
+  recurringInterval RecurringInterval?
+  nextRecurringDate DateTime?
+  lastProcessed     DateTime?
+  status            TransactionStatus  @default(COMPLETED)
+  source            TransactionSource  @default(MANUAL)
+  userId            String             @db.ObjectId
+  user              User               @relation(fields: [userId], references: [id], onDelete: Cascade)
+  accountId         String             @db.ObjectId
+  account           FinancialAccount   @relation(fields: [accountId], references: [id], onDelete: Cascade)
+  createdAt         DateTime           @default(now())
+  updatedAt         DateTime           @updatedAt
+
+  @@index([userId])
+  @@index([accountId])
+  @@map("transactions")
+}
+
+model Budget {
+  id            String    @id @default(auto()) @map("_id") @db.ObjectId
+  amount        Float
+  lastAlertSent DateTime?
+  userId        String    @unique @db.ObjectId
+  user          User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  @@map("budgets")
+}
+
+// ─── Enums ───────────────────────────────────────────────────────────────────
+
+enum CategoryType {
+  INCOME
+  EXPENSE
+}
+
+model Category {
+  id        String       @id @default(auto()) @map("_id") @db.ObjectId
+  name      String
+  type      CategoryType
+  color     String       @default("#6b7280")
+  userId    String       @db.ObjectId
+  user      User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt DateTime     @default(now())
+  updatedAt DateTime     @updatedAt
+
+  @@index([userId])
+  @@map("categories")
+}
+
+enum TransactionType {
+  INCOME
+  EXPENSE
+}
+
+enum AccountType {
+  CURRENT
+  SAVINGS
+}
+
+enum TransactionStatus {
+  PENDING
+  COMPLETED
+  FAILED
+}
+
+enum RecurringInterval {
+  DAILY
+  WEEKLY
+  MONTHLY
+  YEARLY
+}
+
+enum TransactionSource {
+  MANUAL
+  RECEIPT_SCAN
+  VOICE
+}

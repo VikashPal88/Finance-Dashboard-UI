@@ -1,10 +1,10 @@
 import type { Metadata } from "next";
 import { Inter, Geist } from "next/font/google";
 import "./globals.css";
-import AppShell from "@/components/layout/AppShell";
 import { cn } from "@/lib/utils";
+import SessionProvider from "@/components/providers/SessionProvider";
 
-const geist = Geist({subsets:['latin'],variable:'--font-sans'});
+const geist = Geist({ subsets: ["latin"], variable: "--font-sans" });
 
 const inter = Inter({
   variable: "--font-inter",
@@ -13,10 +13,19 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: "FinDash — Finance Dashboard",
+  title: "FinDash — Smart Finance Dashboard",
   description:
-    "A clean, interactive finance dashboard to track and understand your financial activity. Built with Next.js, TypeScript, and Tailwind CSS.",
-  keywords: ["finance", "dashboard", "transactions", "budgeting", "analytics"],
+    "Track, analyze, and master your personal finances with AI-powered insights, receipt scanning, and voice-based transaction entry. Built for India's digital-first generation.",
+  keywords: [
+    "finance",
+    "dashboard",
+    "UPI",
+    "transactions",
+    "budgeting",
+    "analytics",
+    "personal finance",
+    "India",
+  ],
 };
 
 export default function RootLayout({
@@ -25,9 +34,14 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" data-theme="dark" className={cn("h-full", inter.variable, "font-sans", geist.variable)} suppressHydrationWarning>
+    <html
+      lang="en"
+      data-theme="dark"
+      className={cn("h-full", inter.variable, "font-sans", geist.variable)}
+      suppressHydrationWarning
+    >
       <body className="min-h-full font-sans antialiased">
-        <AppShell>{children}</AppShell>
+        <SessionProvider>{children}</SessionProvider>
       </body>
     </html>
   );

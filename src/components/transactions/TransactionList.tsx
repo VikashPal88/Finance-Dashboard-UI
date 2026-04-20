@@ -25,7 +25,8 @@ import {
   calculateTotalIncome,
   calculateTotalExpenses,
 } from "@/utils/calculations";
-import { CATEGORY_COLORS, CATEGORIES } from "@/data/mockData";
+import { CATEGORY_COLORS } from "@/data/mockData";
+import { CategoryItem, CATEGORY_COLOR_MAP } from "@/lib/categories";
 import Badge from "@/components/ui/Badge";
 import EmptyState from "@/components/ui/EmptyState";
 import TransactionModal from "./TransactionModal";
@@ -91,34 +92,100 @@ function RowOptions({
 
 export default function TransactionList() {
   const {
-    transactions,
     filters,
     setFilters,
     resetFilters,
-    role,
-    deleteTransaction,
-    accounts,
   } = useStore();
+
+  const [transactions, setTransactions] = useState<Transaction[]>([]);
+  const [accounts, setAccounts] = useState<any[]>([]);
   const [modalOpen, setModalOpen] = useState(false);
   const [editTx, setEditTx] = useState<Transaction | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
   const [showFilters, setShowFilters] = useState(false);
+  const [allCategories, setAllCategories] = useState<CategoryItem[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  const isAdmin = role === "admin";
+  // Fetch transactions from API
+  const fetchTransactions = async () => {
+    try {
+      const res = await fetch('/api/transactions');
+      if (res.ok) {
+        const data = await res.json();
+        setTransactions(data);
+      }
+    } catch (err) {
+      console.error('Failed to fetch transactions', err);
+    }
+  };
+
+  // Fetch accounts from API
+  const fetchAccounts = async () => {
+    try {
+      const res = await fetch('/api/accounts');
+      if (res.ok) {
+        const data = await res.json();
+        setAccounts(data);
+      }
+    } catch (err) {
+      console.error('Failed to fetch accounts', err);
+    }
+  };
+
+  // Fetch categories from API
+  const fetchCategories = async () => {
+    try {
+      const res = await fetch('/api/categories');
+      if (res.ok) {
+        const data = await res.json();
+        setAllCategories(data);
+      }
+    } catch (err) {
+      console.error('Failed to fetch categories', err);
+    }
+  };
+
+  // Load all data on mount
+  useEffect(() => {
+    const loadData = async () => {
+      setLoading(true);
+      await Promise.all([fetchTransactions(), fetchAccounts(), fetchCategories()]);
+      setLoading(false);
+    };
+    loadData();
+  }, []);
+
+  // Build a combined color map: defaults + custom categories
+  const categoryColorMap = useMemo(() => {
+    const map: Record<string, string> = { ...CATEGORY_COLORS, ...CATEGORY_COLOR_MAP };
+    for (const cat of allCategories) {
+      if (cat.color) map[cat.name] = cat.color;
+    }
+    return map;
+  }, [allCategories]);
+
   const totalIncome = calculateTotalIncome(transactions);
   const totalExpenses = calculateTotalExpenses(transactions);
 
   // Listen for custom event from sidebar/header "Add Transaction" button
   useEffect(() => {
     const handler = () => {
-      if (isAdmin) {
-        setEditTx(null);
-        setModalOpen(true);
-      }
+      setEditTx(null);
+      setModalOpen(true);
     };
     window.addEventListener("openAddTransaction", handler);
     return () => window.removeEventListener("openAddTransaction", handler);
-  }, [isAdmin]);
+  }, []);
+
+  // Listen for refresh event (fired after add/edit/delete)
+  useEffect(() => {
+    const handler = () => {
+      fetchTransactions();
+      fetchAccounts(); // Refresh balances too
+    };
+    window.addEventListener("refreshTransactions", handler);
+    return () => window.removeEventListener("refreshTransactions", handler);
+  }, []);
 
   const hasActiveFilters =
     filters.category !== "all" ||
@@ -207,18 +274,16 @@ export default function TransactionList() {
                 Review and manage your capital flows across all accounts.
               </p>
             </div>
-            {isAdmin && (
-              <button
-                onClick={() => {
-                  if (typeof window !== "undefined")
-                    window.dispatchEvent(new CustomEvent("openAddTransaction"));
-                }}
-                className="flex items-center justify-center gap-2 px-4 py-2 bg-primary text-primary-foreground rounded-xl text-sm font-semibold hover:bg-primary-hover transition-colors shadow-md shadow-primary/20"
-              >
-                <Plus size={16} />
-                Add Transaction
-              </button>
-            )}
+            <button
+              onClick={() => {
+                if (typeof window !== "undefined")
+                  window.dispatchEvent(new CustomEvent("openAddTransaction"));
+              }}
+              className="flex items-center justify-center gap-2 px-4 py-2 bg-primary text-primary-foreground rounded-xl text-sm font-semibold hover:bg-primary-hover transition-colors shadow-md shadow-primary/20"
+            >
+              <Plus size={16} />
+              Add Transaction
+            </button>
           </div>
           <div className="flex flex-wrap gap-3">
             <div className="px-4 py-2.5 rounded-xl bg-income/10 border border-income/20">
@@ -316,9 +381,12 @@ export default function TransactionList() {
           </SelectTrigger>
           <SelectContent className="bg-[var(--dropdown-bg)] border-[var(--glass-border)] text-[var(--foreground)] z-[60] p-1">
             <SelectItem value="all">All Categories</SelectItem>
-            {CATEGORIES.map((c) => (
-              <SelectItem key={c} value={c}>
-                {c}
+            {allCategories.map((c) => (
+              <SelectItem key={c.id} value={c.name}>
+                <span className="flex items-center gap-2">
+                  <span className="w-2 h-2 rounded-full" style={{ backgroundColor: c.color }} />
+                  {c.name}
+                </span>
               </SelectItem>
             ))}
           </SelectContent>
@@ -437,20 +505,6 @@ export default function TransactionList() {
         </button>
       </motion.div>
 
-      {/* Admin / Viewer Indicator */}
-      {!isAdmin && (
-        <motion.div
-          initial={{ opacity: 0, y: -10 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="flex items-center gap-2 px-4 py-3 rounded-xl bg-amber-500/10 border border-amber-500/20 text-amber-500 text-xs"
-        >
-          <span>👁️</span>
-          <span>
-            You are in <strong>Viewer</strong> mode. Switch to Admin to add or
-            edit transactions.
-          </span>
-        </motion.div>
-      )}
 
       {/* Table Header */}
       {paginated.length > 0 && (
@@ -532,7 +586,7 @@ export default function TransactionList() {
 
                 {/* Category */}
                 <div className="md:col-span-2 hidden md:block">
-                  <Badge color={CATEGORY_COLORS[tx.category]}>
+                  <Badge color={categoryColorMap[tx.category] || '#6b7280'}>
                     {tx.category}
                   </Badge>
                 </div>
@@ -555,24 +609,22 @@ export default function TransactionList() {
                     {formatCurrency(tx.amount)}
                   </p>
                   <div className="w-8 flex items-center justify-center">
-                    {isAdmin && (
-                      <RowOptions
-                        onEdit={() => {
-                          setEditTx(tx);
-                          setModalOpen(true);
-                        }}
-                        onDelete={() => {
-                          if (confirm("Delete this transaction?"))
-                            deleteTransaction(tx.id);
-                        }}
-                      />
-                    )}
+                    <RowOptions
+                      onEdit={() => {
+                        setEditTx(tx);
+                        setModalOpen(true);
+                      }}
+                      onDelete={() => {
+                        if (confirm("Delete this transaction?"))
+                          deleteTransaction(tx.id);
+                      }}
+                    />
                   </div>
                 </div>
 
                 {/* Mobile: Category badge + actions row */}
                 <div className="flex items-center gap-2 md:hidden">
-                  <Badge color={CATEGORY_COLORS[tx.category]}>
+                  <Badge color={categoryColorMap[tx.category] || '#6b7280'}>
                     {tx.category}
                   </Badge>
                   <span
@@ -580,20 +632,18 @@ export default function TransactionList() {
                   >
                     {tx.type === "income" ? "Credit" : "Debit"}
                   </span>
-                  {isAdmin && (
-                    <div className="ml-auto">
-                      <RowOptions
-                        alignMenu="right"
-                        onEdit={() => {
-                          setEditTx(tx);
-                          setModalOpen(true);
-                        }}
-                        onDelete={() => {
-                          if (confirm("Delete?")) deleteTransaction(tx.id);
-                        }}
-                      />
-                    </div>
-                  )}
+                  <div className="ml-auto">
+                    <RowOptions
+                      alignMenu="right"
+                      onEdit={() => {
+                        setEditTx(tx);
+                        setModalOpen(true);
+                      }}
+                      onDelete={() => {
+                        if (confirm("Delete?")) deleteTransaction(tx.id);
+                      }}
+                    />
+                  </div>
                 </div>
               </motion.div>
             ))}

@@ -1,7 +1,9 @@
 'use client';
 
+import { useState } from 'react';
+import { signOut } from 'next-auth/react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { LogOut, X } from 'lucide-react';
+import { LogOut, Loader2 } from 'lucide-react';
 
 interface SignOutModalProps {
   isOpen: boolean;
@@ -9,6 +11,13 @@ interface SignOutModalProps {
 }
 
 export default function SignOutModal({ isOpen, onClose }: SignOutModalProps) {
+  const [isLoading, setIsLoading] = useState(false);
+
+  const handleSignOut = async () => {
+    setIsLoading(true);
+    await signOut({ callbackUrl: '/' });
+  };
+
   return (
     <AnimatePresence>
       {isOpen && (
@@ -43,16 +52,22 @@ export default function SignOutModal({ isOpen, onClose }: SignOutModalProps) {
               <div className="flex w-full gap-3">
                 <button
                   onClick={onClose}
-                  className="flex-1 py-3 px-4 rounded-xl text-sm font-semibold transition-colors hover:bg-[var(--surface-hover)] border"
+                  disabled={isLoading}
+                  className="flex-1 py-3 px-4 rounded-xl text-sm font-semibold transition-colors hover:bg-[var(--surface-hover)] border disabled:opacity-50"
                   style={{ borderColor: 'var(--glass-border)' }}
                 >
                   Cancel
                 </button>
                 <button
-                  onClick={onClose} // Just hides it as requested
-                  className="flex-1 py-3 px-4 rounded-xl text-sm font-semibold text-white bg-expense hover:bg-expense/90 transition-colors shadow-lg shadow-expense/25"
+                  onClick={handleSignOut}
+                  disabled={isLoading}
+                  className="flex-1 py-3 px-4 rounded-xl text-sm font-semibold text-white bg-expense hover:bg-expense/90 transition-colors shadow-lg shadow-expense/25 disabled:opacity-50 flex items-center justify-center gap-2"
                 >
-                  Yes, Sign Out
+                  {isLoading ? (
+                    <Loader2 size={16} className="animate-spin" />
+                  ) : (
+                    'Yes, Sign Out'
+                  )}
                 </button>
               </div>
             </div>

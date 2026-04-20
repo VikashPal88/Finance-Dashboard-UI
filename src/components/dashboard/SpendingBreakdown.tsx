@@ -1,5 +1,6 @@
 'use client';
 
+import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import {
   PieChart,
@@ -12,10 +13,19 @@ import { useStore } from '@/store/useStore';
 import { getCategoryBreakdown } from '@/utils/calculations';
 import { formatCurrency } from '@/utils/formatters';
 
-export default function SpendingBreakdown() {
-  const transactions = useStore((s) => s.transactions);
+export default function SpendingBreakdown({ accounts }: { accounts: any[] }) {
+  const transactions = accounts?.flatMap((a: any) => 
+    a.transactions?.map((t: any) => ({
+      ...t,
+      type: t.type.toLowerCase(),
+      accountId: a.id
+    })) || []
+  ) || [];
   const breakdown = getCategoryBreakdown(transactions);
   const top6 = breakdown.slice(0, 6);
+
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => setMounted(true), []);
 
   const CustomTooltip = ({ active, payload }: any) => {
     if (!active || !payload?.length) return null;
@@ -46,25 +56,27 @@ export default function SpendingBreakdown() {
 
       <div className="flex flex-col lg:flex-row items-center gap-4">
         <div className="w-48 h-48 flex-shrink-0">
-          <ResponsiveContainer width="100%" height="100%">
-            <PieChart>
-              <Pie
-                data={top6}
-                cx="50%"
-                cy="50%"
-                innerRadius={55}
-                outerRadius={80}
-                dataKey="amount"
-                paddingAngle={3}
-                stroke="none"
-              >
-                {top6.map((entry, index) => (
-                  <Cell key={index} fill={entry.color} />
-                ))}
-              </Pie>
-              <Tooltip content={<CustomTooltip />} />
-            </PieChart>
-          </ResponsiveContainer>
+          {mounted && (
+            <ResponsiveContainer width="100%" height="100%" minWidth={0}>
+              <PieChart>
+                <Pie
+                  data={top6}
+                  cx="50%"
+                  cy="50%"
+                  innerRadius={55}
+                  outerRadius={80}
+                  dataKey="amount"
+                  paddingAngle={3}
+                  stroke="none"
+                >
+                  {top6.map((entry, index) => (
+                    <Cell key={index} fill={entry.color} />
+                  ))}
+                </Pie>
+                <Tooltip content={<CustomTooltip />} />
+              </PieChart>
+            </ResponsiveContainer>
+          )}
         </div>
 
         <div className="flex-1 w-full space-y-2">

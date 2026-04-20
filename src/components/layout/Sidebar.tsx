@@ -21,7 +21,7 @@ import { useStore } from '@/store/useStore';
 import SignOutModal from '@/components/ui/SignOutModal';
 
 const navItems: { route: string; label: string; icon: React.ReactNode }[] = [
-  { route: '/', label: 'Dashboard', icon: <LayoutDashboard size={20} /> },
+  { route: '/dashboard', label: 'Dashboard', icon: <LayoutDashboard size={20} /> },
   { route: '/transactions', label: 'Transactions', icon: <ArrowLeftRight size={20} /> },
   { route: '/accounts', label: 'Accounts', icon: <Wallet size={20} /> },
   { route: '/insights', label: 'Insights', icon: <Lightbulb size={20} /> },

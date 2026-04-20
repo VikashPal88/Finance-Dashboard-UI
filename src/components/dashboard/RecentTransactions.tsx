@@ -8,8 +8,14 @@ import { CATEGORY_COLORS } from '@/data/mockData';
 import Badge from '@/components/ui/Badge';
 import { useRouter } from 'next/navigation';
 
-export default function RecentTransactions() {
-  const transactions = useStore((s) => s.transactions);
+export default function RecentTransactions({ accounts }: { accounts: any[] }) {
+  const transactions = accounts?.flatMap((a: any) => 
+    a.transactions?.map((t: any) => ({
+      ...t,
+      type: t.type.toLowerCase(),
+      accountId: a.id
+    })) || []
+  ) || [];
   const router = useRouter();
 
   const recent = [...transactions]

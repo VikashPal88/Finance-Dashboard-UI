@@ -1,5 +1,6 @@
 'use client';
 
+import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import {
   AreaChart,
@@ -14,8 +15,14 @@ import { useStore } from '@/store/useStore';
 import { getMonthlySummaries } from '@/utils/calculations';
 import { formatCurrency, formatMonth } from '@/utils/formatters';
 
-export default function BalanceTrendChart() {
-  const transactions = useStore((s) => s.transactions);
+export default function BalanceTrendChart({ accounts }: { accounts: any[] }) {
+  const transactions = accounts?.flatMap((a: any) => 
+    a.transactions?.map((t: any) => ({
+      ...t,
+      type: t.type.toLowerCase(),
+      accountId: a.id
+    })) || []
+  ) || [];
   const theme = useStore((s) => s.theme);
   const summaries = getMonthlySummaries(transactions);
 
@@ -23,6 +30,9 @@ export default function BalanceTrendChart() {
     ...s,
     monthLabel: formatMonth(s.month),
   }));
+
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => setMounted(true), []);
 
   const CustomTooltip = ({ active, payload, label }: any) => {
     if (!active || !payload?.length) return null;
@@ -59,52 +69,54 @@ export default function BalanceTrendChart() {
       </div>
 
       <div className="h-[280px]">
-        <ResponsiveContainer width="100%" height="100%">
-          <AreaChart data={data} margin={{ top: 5, right: 5, bottom: 5, left: 0 }}>
-            <defs>
-              <linearGradient id="incomeGradient" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="0%" stopColor="#22c55e" stopOpacity={0.3} />
-                <stop offset="100%" stopColor="#22c55e" stopOpacity={0} />
-              </linearGradient>
-              <linearGradient id="expenseGradient" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="0%" stopColor="#ef4444" stopOpacity={0.3} />
-                <stop offset="100%" stopColor="#ef4444" stopOpacity={0} />
-              </linearGradient>
-            </defs>
-            <CartesianGrid strokeDasharray="3 3" stroke="var(--border-color)" />
-            <XAxis
-              dataKey="monthLabel"
-              tick={{ fontSize: 12, fill: 'var(--muted)' }}
-              axisLine={{ stroke: 'var(--border-color)' }}
-              tickLine={false}
-            />
-            <YAxis
-              tick={{ fontSize: 12, fill: 'var(--muted)' }}
-              axisLine={false}
-              tickLine={false}
-              tickFormatter={(v) => `₹${(v / 1000).toFixed(0)}k`}
-            />
-            <Tooltip content={<CustomTooltip />} />
-            <Area
-              type="monotone"
-              dataKey="income"
-              stroke="#22c55e"
-              strokeWidth={2}
-              fill="url(#incomeGradient)"
-              dot={{ r: 4, fill: '#22c55e', strokeWidth: 0 }}
-              activeDot={{ r: 6, fill: '#22c55e', stroke: '#fff', strokeWidth: 2 }}
-            />
-            <Area
-              type="monotone"
-              dataKey="expenses"
-              stroke="#ef4444"
-              strokeWidth={2}
-              fill="url(#expenseGradient)"
-              dot={{ r: 4, fill: '#ef4444', strokeWidth: 0 }}
-              activeDot={{ r: 6, fill: '#ef4444', stroke: '#fff', strokeWidth: 2 }}
-            />
-          </AreaChart>
-        </ResponsiveContainer>
+        {mounted && (
+          <ResponsiveContainer width="100%" height="100%" minWidth={0}>
+            <AreaChart data={data} margin={{ top: 5, right: 5, bottom: 5, left: 0 }}>
+              <defs>
+                <linearGradient id="incomeGradient" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%" stopColor="#22c55e" stopOpacity={0.3} />
+                  <stop offset="100%" stopColor="#22c55e" stopOpacity={0} />
+                </linearGradient>
+                <linearGradient id="expenseGradient" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%" stopColor="#ef4444" stopOpacity={0.3} />
+                  <stop offset="100%" stopColor="#ef4444" stopOpacity={0} />
+                </linearGradient>
+              </defs>
+              <CartesianGrid strokeDasharray="3 3" stroke="var(--border-color)" />
+              <XAxis
+                dataKey="monthLabel"
+                tick={{ fontSize: 12, fill: 'var(--muted)' }}
+                axisLine={{ stroke: 'var(--border-color)' }}
+                tickLine={false}
+              />
+              <YAxis
+                tick={{ fontSize: 12, fill: 'var(--muted)' }}
+                axisLine={false}
+                tickLine={false}
+                tickFormatter={(v) => `₹${(v / 1000).toFixed(0)}k`}
+              />
+              <Tooltip content={<CustomTooltip />} />
+              <Area
+                type="monotone"
+                dataKey="income"
+                stroke="#22c55e"
+                strokeWidth={2}
+                fill="url(#incomeGradient)"
+                dot={{ r: 4, fill: '#22c55e', strokeWidth: 0 }}
+                activeDot={{ r: 6, fill: '#22c55e', stroke: '#fff', strokeWidth: 2 }}
+              />
+              <Area
+                type="monotone"
+                dataKey="expenses"
+                stroke="#ef4444"
+                strokeWidth={2}
+                fill="url(#expenseGradient)"
+                dot={{ r: 4, fill: '#ef4444', strokeWidth: 0 }}
+                activeDot={{ r: 6, fill: '#ef4444', stroke: '#fff', strokeWidth: 2 }}
+              />
+            </AreaChart>
+          </ResponsiveContainer>
+        )}
       </div>
 
       <div className="flex items-center justify-center gap-6 mt-4">

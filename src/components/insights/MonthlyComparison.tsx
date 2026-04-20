@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useMemo } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { motion } from 'framer-motion';
 import {
   BarChart,
@@ -77,6 +77,9 @@ export default function MonthlyComparison({ accountId }: { accountId?: string })
 
   const data = useMemo(() => getGroupedData(transactions, timeframe), [transactions, timeframe]);
 
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => setMounted(true), []);
+
   const CustomTooltip = ({ active, payload, label }: any) => {
     if (!active || !payload?.length) return null;
     return (
@@ -131,40 +134,42 @@ export default function MonthlyComparison({ accountId }: { accountId?: string })
         </div>
       ) : (
         <div className="h-[300px]">
-          <ResponsiveContainer width="100%" height="100%">
-            <BarChart data={data} margin={{ top: 5, right: 5, bottom: 5, left: 0 }}>
-              <CartesianGrid strokeDasharray="3 3" stroke="var(--border-color)" />
-              <XAxis
-                dataKey="label"
-                tick={{ fontSize: 11, fill: 'var(--muted)' }}
-                axisLine={{ stroke: 'var(--border-color)' }}
-                tickLine={false}
-              />
-              <YAxis
-                tick={{ fontSize: 11, fill: 'var(--muted)' }}
-                axisLine={false}
-                tickLine={false}
-                tickFormatter={(v) => `₹${(v / 1000).toFixed(0)}k`}
-              />
-              <Tooltip content={<CustomTooltip />} cursor={{ fill: 'var(--surface-hover)' }} />
-              <Bar
-                dataKey="income"
-                name="Income"
-                fill="#22c55e"
-                radius={[6, 6, 0, 0]}
-                barSize={timeframe === '1m' ? 12 : 24}
-                fillOpacity={0.85}
-              />
-              <Bar
-                dataKey="expenses"
-                name="Expenses"
-                fill="#ef4444"
-                radius={[6, 6, 0, 0]}
-                barSize={timeframe === '1m' ? 12 : 24}
-                fillOpacity={0.85}
-              />
-            </BarChart>
-          </ResponsiveContainer>
+          {mounted && (
+            <ResponsiveContainer width="100%" height="100%" minWidth={0}>
+              <BarChart data={data} margin={{ top: 5, right: 5, bottom: 5, left: 0 }}>
+                <CartesianGrid strokeDasharray="3 3" stroke="var(--border-color)" />
+                <XAxis
+                  dataKey="label"
+                  tick={{ fontSize: 11, fill: 'var(--muted)' }}
+                  axisLine={{ stroke: 'var(--border-color)' }}
+                  tickLine={false}
+                />
+                <YAxis
+                  tick={{ fontSize: 11, fill: 'var(--muted)' }}
+                  axisLine={false}
+                  tickLine={false}
+                  tickFormatter={(v) => `₹${(v / 1000).toFixed(0)}k`}
+                />
+                <Tooltip content={<CustomTooltip />} cursor={{ fill: 'var(--surface-hover)' }} />
+                <Bar
+                  dataKey="income"
+                  name="Income"
+                  fill="#22c55e"
+                  radius={[6, 6, 0, 0]}
+                  barSize={timeframe === '1m' ? 12 : 24}
+                  fillOpacity={0.85}
+                />
+                <Bar
+                  dataKey="expenses"
+                  name="Expenses"
+                  fill="#ef4444"
+                  radius={[6, 6, 0, 0]}
+                  barSize={timeframe === '1m' ? 12 : 24}
+                  fillOpacity={0.85}
+                />
+              </BarChart>
+            </ResponsiveContainer>
+          )}
         </div>
       )}
 

@@ -3,13 +3,13 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, CalendarIcon } from 'lucide-react';
-import { useStore } from '@/store/useStore';
 import { Transaction, TransactionType, Category } from '@/types';
-import { EXPENSE_CATEGORIES, INCOME_CATEGORIES } from '@/data/mockData';
+import { CategoryItem } from '@/lib/categories';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Calendar } from '@/components/ui/calendar';
-import { format, parseISO } from 'date-fns';
+import { format } from 'date-fns';
+import { useSession } from 'next-auth/react';
 
 interface TransactionModalProps {
   isOpen: boolean;
@@ -18,8 +18,13 @@ interface TransactionModalProps {
 }
 
 export default function TransactionModal({ isOpen, onClose, editTransaction }: TransactionModalProps) {
-  const { addTransaction, editTransaction: updateTransaction, accounts, categories: allCategories } = useStore();
+  const { data: session } = useSession();
   const isEdit = !!editTransaction;
+
+  const [accounts, setAccounts] = useState<any[]>([]);
+  const [allCategories, setAllCategories] = useState<CategoryItem[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [submitting, setSubmitting] = useState(false);
 
   const defaultAccount = accounts.find((a) => a.isDefault);
 
@@ -29,15 +34,55 @@ export default function TransactionModal({ isOpen, onClose, editTransaction }: T
     category: 'Food & Dining' as Category,
     type: 'expense' as TransactionType,
     date: new Date().toISOString().split('T')[0],
-    accountId: defaultAccount?.id || 'acc-main',
+    accountId: defaultAccount?.id || '',
   });
 
-  const [showCalendar, setShowCalendar] = useState(false);
-
-  // Close calendar if clicking outside could be added, but user wants toggle to close on select
+  // Filtered categories based on selected type
   const currentCategories = allCategories.filter(c => c.type === form.type);
 
+  // Fetch accounts from API
+  const fetchAccounts = async () => {
+    try {
+      const res = await fetch('/api/accounts');
+      if (res.ok) {
+        const data = await res.json();
+        setAccounts(data);
+      }
+    } catch (err) {
+      console.error("Failed to fetch accounts", err);
+    }
+  };
+
+  // Fetch categories from API (merged default + custom)
+  const fetchCategories = async () => {
+    try {
+      const res = await fetch('/api/categories');
+      if (res.ok) {
+        const data = await res.json();
+        setAllCategories(data);
+      }
+    } catch (err) {
+      console.error("Failed to fetch categories", err);
+    }
+  };
+
+  // Load data when modal opens
   useEffect(() => {
+    if (!isOpen || !session) return;
+
+    const loadData = async () => {
+      setLoading(true);
+      await Promise.all([fetchAccounts(), fetchCategories()]);
+      setLoading(false);
+    };
+
+    loadData();
+  }, [isOpen, session]);
+
+  // Reset form when editTransaction or modal state changes
+  useEffect(() => {
+    if (!isOpen) return;
+
     if (editTransaction) {
       setForm({
         description: editTransaction.description,
@@ -45,38 +90,66 @@ export default function TransactionModal({ isOpen, onClose, editTransaction }: T
         category: editTransaction.category,
         type: editTransaction.type,
         date: editTransaction.date,
-        accountId: editTransaction.accountId || defaultAccount?.id || 'acc-main',
+        accountId: editTransaction.accountId || defaultAccount?.id || '',
       });
     } else {
+      const expenseCategories = allCategories.filter(c => c.type === 'expense');
       setForm({
         description: '',
         amount: '',
-        category: currentCategories.length > 0 ? currentCategories[0].name : 'Food & Dining',
+        category: expenseCategories.length > 0 ? expenseCategories[0].name : 'Food & Dining',
         type: 'expense',
         date: new Date().toISOString().split('T')[0],
-        accountId: defaultAccount?.id || 'acc-main',
+        accountId: defaultAccount?.id || '',
       });
     }
-    setShowCalendar(false);
-  }, [editTransaction, isOpen, defaultAccount?.id]);
+  }, [editTransaction, isOpen, defaultAccount?.id, allCategories]);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setSubmitting(true);
+
     const data = {
       description: form.description,
       amount: parseFloat(form.amount),
       category: form.category,
-      type: form.type,
-      date: form.date,
+      type: form.type.toUpperCase(),
+      date: new Date(form.date).toISOString(),
       accountId: form.accountId,
     };
 
-    if (isEdit && editTransaction) {
-      updateTransaction(editTransaction.id, data);
-    } else {
-      addTransaction(data);
+    try {
+      if (isEdit && editTransaction) {
+        // Update existing transaction
+        const res = await fetch(`/api/transactions/${editTransaction.id}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(data),
+        });
+        if (!res.ok) {
+          const err = await res.json();
+          console.error("Failed to update transaction:", err);
+          return;
+        }
+      } else {
+        // Create new transaction
+        const res = await fetch('/api/transactions', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(data),
+        });
+        if (!res.ok) {
+          const err = await res.json();
+          console.error("Failed to create transaction:", err);
+          return;
+        }
+      }
+      onClose();
+    } catch (err) {
+      console.error("Transaction submit error:", err);
+    } finally {
+      setSubmitting(false);
     }
-    onClose();
   };
 
   const formatDisplayDate = (dateStr: string) => {
@@ -124,26 +197,26 @@ export default function TransactionModal({ isOpen, onClose, editTransaction }: T
                   <button
                     type="button"
                     onClick={() => {
-                      setForm({ ...form, type: 'expense', category: 'Food & Dining' });
+                      const expenseCats = allCategories.filter(c => c.type === 'expense');
+                      setForm({ ...form, type: 'expense', category: expenseCats[0]?.name || 'Food & Dining' });
                     }}
-                    className={`flex-1 py-2.5 text-sm font-medium transition-all ${
-                      form.type === 'expense'
-                        ? 'bg-expense text-white'
-                        : 'bg-[var(--surface)] text-[var(--muted)]'
-                    }`}
+                    className={`flex-1 py-2.5 text-sm font-medium transition-all ${form.type === 'expense'
+                      ? 'bg-expense text-white'
+                      : 'bg-[var(--surface)] text-[var(--muted)]'
+                      }`}
                   >
                     Expense
                   </button>
                   <button
                     type="button"
                     onClick={() => {
-                      setForm({ ...form, type: 'income', category: 'Salary' });
+                      const incomeCats = allCategories.filter(c => c.type === 'income');
+                      setForm({ ...form, type: 'income', category: incomeCats[0]?.name || 'Salary' });
                     }}
-                    className={`flex-1 py-2.5 text-sm font-medium transition-all ${
-                      form.type === 'income'
-                        ? 'bg-income text-white'
-                        : 'bg-[var(--surface)] text-[var(--muted)]'
-                    }`}
+                    className={`flex-1 py-2.5 text-sm font-medium transition-all ${form.type === 'income'
+                      ? 'bg-income text-white'
+                      : 'bg-[var(--surface)] text-[var(--muted)]'
+                      }`}
                   >
                     Income
                   </button>
@@ -205,7 +278,13 @@ export default function TransactionModal({ isOpen, onClose, editTransaction }: T
                   <SelectContent className="bg-[var(--dropdown-bg)] border-[var(--glass-border)] text-[var(--foreground)] z-[60]">
                     {currentCategories.map((c) => (
                       <SelectItem key={c.id} value={c.name}>
-                        {c.name}
+                        <span className="flex items-center gap-2">
+                          <span className="w-2.5 h-2.5 rounded-full inline-block" style={{ backgroundColor: c.color }} />
+                          {c.name}
+                          {!c.isDefault && (
+                            <span className="text-[9px] text-[var(--muted)] ml-1">(custom)</span>
+                          )}
+                        </span>
                       </SelectItem>
                     ))}
                   </SelectContent>
@@ -240,9 +319,10 @@ export default function TransactionModal({ isOpen, onClose, editTransaction }: T
               {/* Submit */}
               <button
                 type="submit"
-                className="w-full mt-4 py-3 rounded-xl bg-gradient-to-r from-indigo-500 to-purple-600 text-white text-sm font-semibold shadow-lg shadow-indigo-500/25 hover:shadow-indigo-500/40 transition-shadow"
+                disabled={submitting || !form.accountId}
+                className="w-full mt-4 py-3 rounded-xl bg-gradient-to-r from-indigo-500 to-purple-600 text-white text-sm font-semibold shadow-lg shadow-indigo-500/25 hover:shadow-indigo-500/40 transition-shadow disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                {isEdit ? 'Save Changes' : 'Add Transaction'}
+                {submitting ? 'Saving...' : isEdit ? 'Save Changes' : 'Add Transaction'}
               </button>
             </form>
           </motion.div>

@@ -1,9 +1,8 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import {
-  Shield,
   Eye,
   User,
   Mail,
@@ -15,31 +14,115 @@ import {
   AlertTriangle,
   Plus,
   Trash2,
+  Loader2,
 } from 'lucide-react';
 import { useStore } from '@/store/useStore';
 import ToggleSwitch from '@/components/ui/ToggleSwitch';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { CategoryItem } from '@/lib/categories';
+import { useSession } from 'next-auth/react';
 
 export default function SettingsPage() {
-  const { role, setRole, categories, addCategory, deleteCategory } = useStore();
-  const isAdmin = role === 'admin';
-  const [name, setName] = useState('Vikash Pal');
-  const [email, setEmail] = useState('vs700034@gmail.com');
+  const { data: session } = useSession();
+  const [name, setName] = useState('');
+  const [email, setEmail] = useState('');
   const [txDigests, setTxDigests] = useState(true);
   const [secAlerts, setSecAlerts] = useState(true);
   const [budgetAlerts, setBudgetAlerts] = useState(true);
   const [saved, setSaved] = useState(false);
 
-  // Custom Category state
+  // Category state
+  const [categories, setCategories] = useState<CategoryItem[]>([]);
+  const [loadingCategories, setLoadingCategories] = useState(false);
   const [newCatName, setNewCatName] = useState('');
   const [newCatType, setNewCatType] = useState<'expense' | 'income'>('expense');
   const [newCatColor, setNewCatColor] = useState('#84cc16');
+  const [addingCategory, setAddingCategory] = useState(false);
+  const [catError, setCatError] = useState('');
 
-  const handleAddCategory = () => {
+  // Load user info from session
+  useEffect(() => {
+    if (session?.user) {
+      setName(session.user.name || '');
+      setEmail(session.user.email || '');
+    }
+  }, [session]);
+
+  // Fetch categories from API
+  const fetchCategories = async () => {
+    try {
+      setLoadingCategories(true);
+      const res = await fetch('/api/categories');
+      if (res.ok) {
+        const data = await res.json();
+        setCategories(data);
+      }
+    } catch (err) {
+      console.error("Failed to fetch categories", err);
+    } finally {
+      setLoadingCategories(false);
+    }
+  };
+
+  useEffect(() => {
+    if (session) {
+      fetchCategories();
+    }
+  }, [session]);
+
+  // Custom categories only (for the management list)
+  const customCategories = categories.filter(c => !c.isDefault);
+
+  const handleAddCategory = async () => {
     if (!newCatName.trim()) return;
-    addCategory({ name: newCatName.trim(), type: newCatType, color: newCatColor });
-    setNewCatName('');
+    setCatError('');
+    setAddingCategory(true);
+
+    try {
+      const res = await fetch('/api/categories', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name: newCatName.trim(),
+          type: newCatType,
+          color: newCatColor,
+        }),
+      });
+
+      if (res.ok) {
+        setNewCatName('');
+        await fetchCategories(); // Refresh the list
+      } else {
+        const data = await res.json();
+        setCatError(data.error || 'Failed to add category');
+      }
+    } catch (err) {
+      setCatError('Network error');
+    } finally {
+      setAddingCategory(false);
+    }
+  };
+
+  const handleDeleteCategory = async (id: string) => {
+    if (!confirm('Delete this category?')) return;
+
+    try {
+      const res = await fetch('/api/categories', {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id }),
+      });
+
+      if (res.ok) {
+        await fetchCategories();
+      } else {
+        const data = await res.json();
+        alert(data.error || 'Failed to delete category');
+      }
+    } catch (err) {
+      alert('Network error');
+    }
   };
 
   const handleSave = () => {
@@ -64,8 +147,10 @@ export default function SettingsPage() {
         <div className="flex items-center gap-3">
           <button
             onClick={() => {
-              setName('Vikash Pal');
-              setEmail('vs700034@gmail.com');
+              if (session?.user) {
+                setName(session.user.name || '');
+                setEmail(session.user.email || '');
+              }
             }}
             className="px-5 py-2.5 rounded-xl border text-sm font-medium transition-all hover:bg-[var(--surface-hover)]"
             style={{ borderColor: 'var(--glass-border)' }}
@@ -86,106 +171,7 @@ export default function SettingsPage() {
       <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
         {/* Left Column - Permissions */}
         <div className="lg:col-span-3 space-y-6">
-          {/* Institutional Permissions */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.1 }}
-            className="glass-card p-6"
-          >
-            <div className="flex items-start justify-between mb-4">
-              <div>
-                <h2 className="text-lg font-semibold">Role & Permissions</h2>
-                <p className="text-sm text-[var(--muted)] mt-1">
-                  Adjust your operational scope. Administrators hold full transactional authority while Viewers maintain read-only audit capabilities.
-                </p>
-              </div>
-              <div className="p-2 rounded-xl bg-primary/10">
-                <ShieldCheck size={22} className="text-primary" />
-              </div>
-            </div>
 
-            {/* Active Role Card */}
-            <div className="flex flex-col sm:flex-row sm:items-center gap-4 p-4 rounded-xl bg-[var(--surface)] mb-5">
-              <div className="flex items-center gap-3 flex-1">
-                <div className="w-12 h-12 rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center">
-                  {role === 'admin' ? (
-                    <Shield size={22} className="text-white" />
-                  ) : (
-                    <Eye size={22} className="text-white" />
-                  )}
-                </div>
-                <div>
-                  <p className="text-sm font-semibold">
-                    Active Role: {role === 'admin' ? 'Administrator' : 'Viewer'}
-                  </p>
-                  <p className={`text-xs font-medium ${role === 'admin' ? 'text-income' : 'text-amber-500'}`}>
-                    {role === 'admin' ? 'Full Transactional Access Enabled' : 'Read-Only Audit Mode'}
-                  </p>
-                </div>
-              </div>
-              <div className="flex rounded-lg overflow-hidden border" style={{ borderColor: 'var(--glass-border)' }}>
-                <button
-                  onClick={() => setRole('admin')}
-                  className={`px-5 py-2 text-sm font-medium transition-all ${role === 'admin'
-                    ? 'bg-[var(--foreground)] text-[var(--background)]'
-                    : 'bg-[var(--surface)] text-[var(--muted)] hover:text-[var(--foreground)]'
-                    }`}
-                >
-                  Admin
-                </button>
-                <button
-                  onClick={() => setRole('viewer')}
-                  className={`px-5 py-2 text-sm font-medium transition-all ${role === 'viewer'
-                    ? 'bg-[var(--foreground)] text-[var(--background)]'
-                    : 'bg-[var(--surface)] text-[var(--muted)] hover:text-[var(--foreground)]'
-                    }`}
-                >
-                  Viewer
-                </button>
-              </div>
-            </div>
-
-            {/* Privileges Grid */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div className="p-4 rounded-xl bg-[var(--surface)]">
-                <h4 className="text-xs font-semibold uppercase tracking-wider text-[var(--muted)] mb-3">
-                  Admin Privileges
-                </h4>
-                <ul className="space-y-2">
-                  {[
-                    'Create/Edit Transactions',
-                    'Delete Records',
-                    'Export Data (CSV/JSON)',
-                    'Full Dashboard Access',
-                  ].map((item) => (
-                    <li key={item} className="flex items-center gap-2 text-sm">
-                      <div className="w-1.5 h-1.5 rounded-full bg-primary" />
-                      {item}
-                    </li>
-                  ))}
-                </ul>
-              </div>
-              <div className="p-4 rounded-xl bg-[var(--surface)]">
-                <h4 className="text-xs font-semibold uppercase tracking-wider text-[var(--muted)] mb-3">
-                  Viewer Mode (Audit)
-                </h4>
-                <ul className="space-y-2">
-                  {[
-                    'Read-only transaction logs',
-                    'View analytics & insights',
-                    'Export PDF reports',
-                    'Dashboard overview',
-                  ].map((item) => (
-                    <li key={item} className="flex items-center gap-2 text-sm text-[var(--muted)]">
-                      <div className="w-1.5 h-1.5 rounded-full bg-[var(--muted)]" />
-                      {item}
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            </div>
-          </motion.div>
 
           {/* Security Protocols */}
           <motion.div
@@ -348,7 +334,7 @@ export default function SettingsPage() {
           <input
             type="text"
             value={newCatName}
-            onChange={(e) => setNewCatName(e.target.value)}
+            onChange={(e) => { setNewCatName(e.target.value); setCatError(''); }}
             onKeyDown={(e) => { if (e.key === 'Enter') handleAddCategory(); }}
             placeholder="New category name..."
             className="flex-1 min-w-[180px] px-4 py-2.5 rounded-lg text-sm bg-[var(--background)] border"
@@ -362,13 +348,18 @@ export default function SettingsPage() {
           />
           <button
             onClick={handleAddCategory}
-            disabled={!newCatName.trim()}
+            disabled={!newCatName.trim() || addingCategory}
             className="flex items-center gap-1.5 px-4 py-2.5 rounded-lg bg-primary/10 text-primary hover:bg-primary hover:text-white transition-all text-sm font-medium disabled:opacity-40 disabled:cursor-not-allowed"
           >
-            <Plus size={14} />
+            {addingCategory ? <Loader2 size={14} className="animate-spin" /> : <Plus size={14} />}
             Add
           </button>
         </div>
+
+        {/* Error message */}
+        {catError && (
+          <p className="text-xs text-expense mb-3 px-1">{catError}</p>
+        )}
 
         {/* Category List (Dropdown Management) */}
         <div className="flex items-center gap-4">
@@ -377,7 +368,7 @@ export default function SettingsPage() {
               className="w-full sm:w-auto px-5 py-2.5 rounded-xl border flex items-center justify-between gap-3 text-sm font-medium transition-colors hover:bg-[var(--surface-hover)] bg-[var(--surface)] text-[var(--foreground)]"
               style={{ borderColor: 'var(--glass-border)' }}
             >
-              View & Manage Categories
+              View & Manage Categories ({customCategories.length} custom)
               <ChevronRight size={16} className="text-[var(--muted)] rotate-90" />
             </PopoverTrigger>
             <PopoverContent
@@ -385,10 +376,17 @@ export default function SettingsPage() {
               align="start"
             >
               <div className="max-h-72 overflow-y-auto pr-1 custom-scrollbar space-y-1">
-                {categories.length === 0 && (
-                  <p className="text-xs text-center p-4 text-[var(--muted)]">No categories found.</p>
+                {loadingCategories && (
+                  <div className="flex items-center justify-center p-4">
+                    <Loader2 size={16} className="animate-spin text-[var(--muted)]" />
+                  </div>
                 )}
-                {categories.map((cat) => (
+
+                {!loadingCategories && customCategories.length === 0 && (
+                  <p className="text-xs text-center p-4 text-[var(--muted)]">No custom categories yet. Add one above!</p>
+                )}
+
+                {customCategories.map((cat) => (
                   <div
                     key={cat.id}
                     className="flex items-center justify-between p-2 rounded-lg hover:bg-[var(--surface-hover)] transition-all group"
@@ -401,15 +399,13 @@ export default function SettingsPage() {
                         {cat.type}
                       </span>
                     </div>
-                    {isAdmin && (
-                      <button
-                        onClick={() => { if (confirm('Delete this category?')) deleteCategory(cat.id); }}
-                        className="p-1.5 rounded-md text-[var(--muted)] hover:text-expense hover:bg-expense/10 transition-colors shrink-0"
-                        title="Delete category"
-                      >
-                        <Trash2 size={14} />
-                      </button>
-                    )}
+                    <button
+                      onClick={() => handleDeleteCategory(cat.id)}
+                      className="p-1.5 rounded-md text-[var(--muted)] hover:text-expense hover:bg-expense/10 transition-colors shrink-0"
+                      title="Delete category"
+                    >
+                      <Trash2 size={14} />
+                    </button>
                   </div>
                 ))}
               </div>
