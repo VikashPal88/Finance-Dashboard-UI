@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, Suspense } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { signIn } from "next-auth/react";
@@ -8,7 +8,35 @@ import { motion } from "framer-motion";
 import { Eye, EyeOff, Mail, Lock, Loader2, AlertCircle } from "lucide-react";
 import { signinSchema } from "@/lib/validations";
 
+function SignInFormFallback() {
+  return (
+    <div className="w-full max-w-md">
+      <div className="glass-card p-8 sm:p-10">
+        <div className="text-center mb-8">
+          <h2 className="text-2xl font-bold tracking-tight mb-2">
+            Welcome Back
+          </h2>
+          <p className="text-sm text-[var(--muted-foreground)]">
+            Loading...
+          </p>
+        </div>
+        <div className="flex items-center justify-center py-12">
+          <Loader2 className="w-6 h-6 animate-spin text-indigo-500" />
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export default function SignInPage() {
+  return (
+    <Suspense fallback={<SignInFormFallback />}>
+      <SignInForm />
+    </Suspense>
+  );
+}
+
+function SignInForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const callbackUrl = searchParams.get("callbackUrl") || "/dashboard";
