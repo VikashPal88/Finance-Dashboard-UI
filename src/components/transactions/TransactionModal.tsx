@@ -10,6 +10,7 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 import { Calendar } from '@/components/ui/calendar';
 import { format } from 'date-fns';
 import { useSession } from 'next-auth/react';
+import { fetchJsonCached, invalidateClientFetch } from '@/lib/client-fetch';
 
 interface TransactionModalProps {
   isOpen: boolean;
@@ -23,7 +24,6 @@ export default function TransactionModal({ isOpen, onClose, editTransaction }: T
 
   const [accounts, setAccounts] = useState<any[]>([]);
   const [allCategories, setAllCategories] = useState<CategoryItem[]>([]);
-  const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
 
   const defaultAccount = accounts.find((a) => a.isDefault);
@@ -40,43 +40,29 @@ export default function TransactionModal({ isOpen, onClose, editTransaction }: T
   // Filtered categories based on selected type
   const currentCategories = allCategories.filter(c => c.type === form.type);
 
-  // Fetch accounts from API
-  const fetchAccounts = async () => {
-    try {
-      const res = await fetch('/api/accounts');
-      if (res.ok) {
-        const data = await res.json();
-        setAccounts(data);
-      }
-    } catch (err) {
-      console.error("Failed to fetch accounts", err);
-    }
-  };
-
-  // Fetch categories from API (merged default + custom)
-  const fetchCategories = async () => {
-    try {
-      const res = await fetch('/api/categories');
-      if (res.ok) {
-        const data = await res.json();
-        setAllCategories(data);
-      }
-    } catch (err) {
-      console.error("Failed to fetch categories", err);
-    }
-  };
-
   // Load data when modal opens
   useEffect(() => {
     if (!isOpen || !session) return;
 
-    const loadData = async () => {
-      setLoading(true);
-      await Promise.all([fetchAccounts(), fetchCategories()]);
-      setLoading(false);
-    };
+    let isActive = true;
 
-    loadData();
+    Promise.all([
+      fetchJsonCached<any[]>('/api/accounts'),
+      fetchJsonCached<CategoryItem[]>('/api/categories'),
+    ])
+      .then(([accountsData, categoriesData]) => {
+        if (!isActive) return;
+
+        setAccounts(accountsData);
+        setAllCategories(categoriesData);
+      })
+      .catch((err) => {
+        console.error('Failed to load transaction modal data', err);
+      });
+
+    return () => {
+      isActive = false;
+    };
   }, [isOpen, session]);
 
   // Reset form when editTransaction or modal state changes
@@ -143,6 +129,10 @@ export default function TransactionModal({ isOpen, onClose, editTransaction }: T
           console.error("Failed to create transaction:", err);
           return;
         }
+      }
+      invalidateClientFetch('/api/transactions', '/api/accounts', '/api/dashboard', '/api/budget');
+      if (typeof window !== 'undefined') {
+        window.dispatchEvent(new CustomEvent('refreshTransactions'));
       }
       onClose();
     } catch (err) {
@@ -320,7 +310,7 @@ export default function TransactionModal({ isOpen, onClose, editTransaction }: T
               <button
                 type="submit"
                 disabled={submitting || !form.accountId}
-                className="w-full mt-4 py-3 rounded-xl bg-gradient-to-r from-indigo-500 to-purple-600 text-white text-sm font-semibold shadow-lg shadow-indigo-500/25 hover:shadow-indigo-500/40 transition-shadow disabled:opacity-50 disabled:cursor-not-allowed"
+                className="w-full mt-4 py-3 rounded-xl bg-gradient-to-r from-orange-500 to-orange-600 text-white text-sm font-semibold shadow-lg shadow-orange-500/25 hover:shadow-orange-500/40 transition-shadow disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {submitting ? 'Saving...' : isEdit ? 'Save Changes' : 'Add Transaction'}
               </button>

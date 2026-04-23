@@ -21,7 +21,7 @@ function SignInFormFallback() {
           </p>
         </div>
         <div className="flex items-center justify-center py-12">
-          <Loader2 className="w-6 h-6 animate-spin text-indigo-500" />
+          <Loader2 className="w-6 h-6 animate-spin text-orange-500" />
         </div>
       </div>
     </div>
@@ -138,7 +138,7 @@ function SignInForm() {
             Continue with Google
           </button>
 
-          <button
+          {/* <button
             onClick={() => handleOAuthSignIn("github")}
             disabled={!!oauthLoading}
             className="w-full flex items-center justify-center gap-3 px-4 py-3 rounded-xl border border-[var(--glass-border)] bg-[var(--surface)] hover:bg-[var(--surface-hover)] transition-all text-sm font-medium disabled:opacity-50"
@@ -151,7 +151,7 @@ function SignInForm() {
               </svg>
             )}
             Continue with GitHub
-          </button>
+          </button> */}
         </div>
 
         {/* Divider */}
@@ -234,7 +234,7 @@ function SignInForm() {
           <button
             type="submit"
             disabled={isLoading}
-            className="w-full flex items-center justify-center gap-2 py-3 rounded-xl bg-gradient-to-r from-indigo-500 to-purple-600 text-white text-sm font-semibold shadow-lg shadow-indigo-500/25 hover:shadow-indigo-500/40 transition-all hover:scale-[1.01] active:scale-[0.99] disabled:opacity-50 disabled:hover:scale-100"
+            className="w-full flex items-center justify-center gap-2 py-3 rounded-xl bg-gradient-to-r from-orange-500 to-orange-600 text-white text-sm font-semibold shadow-lg shadow-orange-500/25 hover:shadow-orange-500/40 transition-all hover:scale-[1.01] active:scale-[0.99] disabled:opacity-50 disabled:hover:scale-100"
           >
             {isLoading ? (
               <Loader2 className="w-4 h-4 animate-spin" />
@@ -249,7 +249,7 @@ function SignInForm() {
           Don&apos;t have an account?{" "}
           <Link
             href="/sign-up"
-            className="text-indigo-400 hover:text-indigo-300 font-medium transition-colors"
+            className="text-orange-500 hover:text-orange-400 font-medium transition-colors"
           >
             Sign Up
           </Link>

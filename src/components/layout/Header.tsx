@@ -106,7 +106,7 @@ export default function Header() {
           whileHover={{ scale: 1.05 }}
           whileTap={{ scale: 0.95 }}
           onClick={openAddTransaction}
-          className="hidden sm:flex items-center gap-1.5 px-3 py-2 rounded-xl bg-gradient-to-r from-indigo-500 to-purple-600 text-white text-xs font-semibold shadow-md shadow-indigo-500/20 hover:shadow-indigo-500/30 transition-shadow"
+          className="hidden sm:flex items-center gap-1.5 px-3 py-2 rounded-xl bg-gradient-to-r from-orange-500 to-orange-600 text-white text-xs font-semibold shadow-md shadow-orange-500/20 hover:shadow-orange-500/30 transition-shadow"
         >
           <Plus size={14} />
           <span className="hidden md:inline">Add Transaction</span>
@@ -190,7 +190,7 @@ export default function Header() {
             onClick={() => setProfileOpen(!profileOpen)}
             className="flex items-center gap-2 p-1 rounded-xl hover:bg-[var(--surface-hover)] transition-colors"
           >
-            <div className="w-9 h-9 rounded-full bg-gradient-to-br from-indigo-500 via-purple-500 to-pink-500 flex items-center justify-center text-white text-sm font-bold ring-2 ring-[var(--glass-border)]">
+            <div className="w-9 h-9 rounded-full bg-gradient-to-br from-orange-500 via-orange-400 to-amber-500 flex items-center justify-center text-white text-sm font-bold ring-2 ring-[var(--glass-border)]">
               VP
             </div>
             <ChevronDown size={14} className="text-[var(--muted)] hidden md:block" />
@@ -212,7 +212,7 @@ export default function Header() {
                 {/* Profile Header */}
                 <div className="p-4 border-b" style={{ borderColor: 'var(--glass-border)' }}>
                   <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-full bg-gradient-to-br from-indigo-500 via-purple-500 to-pink-500 flex items-center justify-center text-white text-sm font-bold">
+                    <div className="w-10 h-10 rounded-full bg-gradient-to-br from-orange-500 via-orange-400 to-amber-500 flex items-center justify-center text-white text-sm font-bold">
                       VP
                     </div>
                     <div>

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo, useEffect, useRef } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   ArrowUpRight,
@@ -12,10 +12,8 @@ import {
   ChevronLeft,
   ChevronRight,
   Building2,
-  SlidersHorizontal,
   Search,
   X,
-  Calendar,
   MoreHorizontal,
 } from "lucide-react";
 import { useStore } from "@/store/useStore";
@@ -42,6 +40,7 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
+import { fetchJsonCached, invalidateClientFetch } from "@/lib/client-fetch";
 
 const ITEMS_PER_PAGE = 10;
 
@@ -90,7 +89,11 @@ function RowOptions({
   );
 }
 
-export default function TransactionList() {
+interface TransactionListProps {
+  initialAccountId?: string;
+}
+
+export default function TransactionList({ initialAccountId }: TransactionListProps) {
   const {
     filters,
     setFilters,
@@ -102,57 +105,72 @@ export default function TransactionList() {
   const [modalOpen, setModalOpen] = useState(false);
   const [editTx, setEditTx] = useState<Transaction | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
-  const [showFilters, setShowFilters] = useState(false);
   const [allCategories, setAllCategories] = useState<CategoryItem[]>([]);
-  const [loading, setLoading] = useState(true);
 
   // Fetch transactions from API
-  const fetchTransactions = async () => {
+  const fetchTransactions = async (force = false) => {
     try {
-      const res = await fetch('/api/transactions');
-      if (res.ok) {
-        const data = await res.json();
-        setTransactions(data);
-      }
+      const data = await fetchJsonCached<Transaction[]>('/api/transactions', undefined, { force });
+      setTransactions(data);
     } catch (err) {
       console.error('Failed to fetch transactions', err);
     }
   };
 
   // Fetch accounts from API
-  const fetchAccounts = async () => {
+  const fetchAccounts = async (force = false) => {
     try {
-      const res = await fetch('/api/accounts');
-      if (res.ok) {
-        const data = await res.json();
-        setAccounts(data);
-      }
+      const data = await fetchJsonCached<any[]>('/api/accounts', undefined, { force });
+      setAccounts(data);
     } catch (err) {
       console.error('Failed to fetch accounts', err);
     }
   };
 
-  // Fetch categories from API
-  const fetchCategories = async () => {
+  // Apply initial account filter from URL param
+  useEffect(() => {
+    if (initialAccountId) {
+      setFilters({ accountId: initialAccountId });
+    }
+  }, [initialAccountId, setFilters]);
+
+  // Delete transaction via API
+  const deleteTransaction = async (id: string) => {
     try {
-      const res = await fetch('/api/categories');
+      const res = await fetch(`/api/transactions/${id}`, { method: 'DELETE' });
       if (res.ok) {
-        const data = await res.json();
-        setAllCategories(data);
+        invalidateClientFetch('/api/transactions', '/api/accounts', '/api/dashboard', '/api/budget');
+        fetchTransactions(true);
+        fetchAccounts(true); // Refresh balances
       }
     } catch (err) {
-      console.error('Failed to fetch categories', err);
+      console.error('Failed to delete transaction', err);
     }
   };
 
   // Load all data on mount
   useEffect(() => {
-    const loadData = async () => {
-      setLoading(true);
-      await Promise.all([fetchTransactions(), fetchAccounts(), fetchCategories()]);
-      setLoading(false);
+    let isActive = true;
+
+    Promise.all([
+      fetchJsonCached<Transaction[]>("/api/transactions"),
+      fetchJsonCached<any[]>("/api/accounts"),
+      fetchJsonCached<CategoryItem[]>("/api/categories"),
+    ])
+      .then(([transactionsData, accountsData, categoriesData]) => {
+        if (!isActive) return;
+
+        setTransactions(transactionsData);
+        setAccounts(accountsData);
+        setAllCategories(categoriesData);
+      })
+      .catch((err) => {
+        console.error("Failed to load transactions page data", err);
+      });
+
+    return () => {
+      isActive = false;
     };
-    loadData();
   }, []);
 
   // Build a combined color map: defaults + custom categories
@@ -179,9 +197,19 @@ export default function TransactionList() {
 
   // Listen for refresh event (fired after add/edit/delete)
   useEffect(() => {
-    const handler = () => {
-      fetchTransactions();
-      fetchAccounts(); // Refresh balances too
+    const handler = async () => {
+      invalidateClientFetch('/api/transactions', '/api/accounts', '/api/dashboard', '/api/budget');
+      try {
+        const [transactionsData, accountsData] = await Promise.all([
+          fetchJsonCached<Transaction[]>('/api/transactions', undefined, { force: true }),
+          fetchJsonCached<any[]>('/api/accounts', undefined, { force: true }),
+        ]);
+
+        setTransactions(transactionsData);
+        setAccounts(accountsData);
+      } catch (err) {
+        console.error('Failed to refresh transactions', err);
+      }
     };
     window.addEventListener("refreshTransactions", handler);
     return () => window.removeEventListener("refreshTransactions", handler);
@@ -310,7 +338,7 @@ export default function TransactionList() {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.1 }}
-          className="glass-card p-6 lg:w-72 bg-gradient-to-br from-indigo-500/10 to-purple-600/10 border-primary/20 flex flex-col items-center justify-center text-center"
+          className="glass-card p-6 lg:w-72 bg-gradient-to-br from-orange-500/10 to-orange-600/10 border-primary/20 flex flex-col items-center justify-center text-center"
         >
           <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center mb-3">
             <Building2 size={24} className="text-primary" />

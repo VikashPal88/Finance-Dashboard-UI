@@ -100,8 +100,8 @@ export default function SpendingInsights({ accountId }: { accountId?: string }) 
       title: 'Total Transactions',
       value: transactions.length.toString(),
       subtitle: `${transactions.filter((t) => t.type === 'income').length} income · ${transactions.filter((t) => t.type === 'expense').length} expense`,
-      icon: <Activity size={20} className="text-indigo-400" />,
-      gradient: 'from-indigo-500/10 to-blue-500/10',
+      icon: <Activity size={20} className="text-orange-400" />,
+      gradient: 'from-orange-500/10 to-amber-500/10',
     },
   ];
 

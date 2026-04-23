@@ -1,13 +1,12 @@
 'use client';
 
 import { motion } from 'framer-motion';
-import { Wallet, ArrowRight, AlertTriangle } from 'lucide-react';
-import { useStore } from '@/store/useStore';
+import { Wallet, ArrowRight, Plus, AlertTriangle } from 'lucide-react';
 import { formatCurrency } from '@/utils/formatters';
 import { useRouter } from 'next/navigation';
 
 export default function AccountOverview({ accounts = [] }: { accounts?: any[] }) {
-  const transactions = accounts?.flatMap((a: any) => 
+  const transactions = accounts?.flatMap((a: any) =>
     a.transactions?.map((t: any) => ({
       ...t,
       type: t.type.toLowerCase(),
@@ -16,100 +15,87 @@ export default function AccountOverview({ accounts = [] }: { accounts?: any[] })
   ) || [];
   const router = useRouter();
 
-  const getMonthlySpent = (accountId: string) => {
-    const currentMonth = new Date().toISOString().substring(0, 7);
-    return transactions
-      .filter((t) => t.type === 'expense' && t.accountId === accountId && t.date.substring(0, 7) === currentMonth)
-      .reduce((s, t) => s + t.amount, 0);
-  };
-
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ delay: 0.45 }}
-      className="glass-card p-5"
+      transition={{ delay: 0.35 }}
+      className="dash-card p-5"
     >
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-2">
-          <Wallet size={16} className="text-primary" />
-          <h3 className="text-sm font-semibold">Account Overview</h3>
+          <Wallet size={16} className="text-accent-orange" />
+          <h3 className="text-sm font-semibold text-[var(--foreground)]">My Accounts</h3>
         </div>
         <button
           onClick={() => router.push('/accounts')}
-          className="flex items-center gap-1 text-xs text-primary hover:text-primary-hover transition-colors"
+          className="flex items-center gap-1.5 text-xs font-medium text-accent-orange hover:text-accent-orange-dark transition-colors"
         >
-          Manage <ArrowRight size={12} />
+          <Plus size={14} /> Add new
         </button>
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="flex gap-4 overflow-x-auto pb-2 -mx-1 px-1 snap-x snap-mandatory scrollbar-hide">
         {accounts.map((account, index) => {
-          const monthlySpent = getMonthlySpent(account.id);
-          const budgetPercent = account.budget > 0 ? (monthlySpent / account.budget) * 100 : 0;
-          const isWarning = budgetPercent >= 90;
-          const totalTx = transactions.filter((t) => t.accountId === account.id).length;
+          const totalTx = transactions.filter((t: any) => t.accountId === account.id).length;
+          const monthlySpent = transactions
+            .filter((t: any) =>
+              t.type === 'expense' &&
+              t.accountId === account.id &&
+              t.date?.substring(0, 7) === new Date().toISOString().substring(0, 7)
+            )
+            .reduce((s: number, t: any) => s + t.amount, 0);
 
           return (
             <motion.div
               key={account.id}
-              initial={{ opacity: 0, scale: 0.98 }}
+              initial={{ opacity: 0, scale: 0.95 }}
               animate={{ opacity: 1, scale: 1 }}
-              transition={{ delay: 0.5 + index * 0.05 }}
-              whileHover={{ y: -2 }}
+              transition={{ delay: 0.4 + index * 0.05 }}
+              whileHover={{ y: -3, transition: { duration: 0.15 } }}
               onClick={() => router.push('/accounts')}
-              className="p-4 rounded-xl transition-all cursor-pointer group hover:bg-[var(--surface)] hover:shadow-lg border border-[var(--glass-border)]"
+              className="snap-start flex-shrink-0 w-[220px] p-4 rounded-2xl border border-[var(--glass-border)] bg-[var(--card-bg)] cursor-pointer group hover:border-accent-orange/30 transition-all"
             >
               <div className="flex items-center gap-3 mb-3">
                 <div
-                  className="w-10 h-10 rounded-lg flex items-center justify-center text-lg shrink-0 border"
-                  style={{ backgroundColor: `transparent`, borderColor: account.color }}
+                  className="w-11 h-11 rounded-xl flex items-center justify-center text-lg border"
+                  style={{ borderColor: account.color, backgroundColor: `${account.color}10` }}
                 >
                   {account.icon}
                 </div>
                 <div className="flex-1 min-w-0">
-                  <p className="text-sm font-semibold truncate group-hover:text-[var(--foreground)] transition-colors">{account.name}</p>
-                  <p className="text-xs text-[var(--muted)]">{totalTx} transactions</p>
+                  <p className="text-sm font-semibold text-[var(--foreground)] truncate">{account.name}</p>
+                  <p className="text-[10px] text-[var(--muted)] uppercase tracking-wider">{account.type}</p>
                 </div>
-                {isWarning && (
-                  <AlertTriangle size={16} className="text-amber-500 shrink-0" />
-                )}
               </div>
 
-              {account.budget > 0 ? (
-                <div>
-                  <div className="flex items-center justify-between mb-1.5 opacity-80 group-hover:opacity-100 transition-opacity">
-                    <span className="text-xs font-medium text-[var(--muted)]">
-                      {formatCurrency(monthlySpent)}
-                    </span>
-                    <span className={`text-xs font-semibold ${isWarning ? 'text-amber-500' : 'text-[var(--muted)]'}`}>
-                      {budgetPercent.toFixed(0)}%
-                    </span>
-                  </div>
-                  <div className="h-1 rounded-full bg-[var(--surface)] overflow-hidden">
-                    <motion.div
-                      initial={{ width: 0 }}
-                      animate={{ width: `${Math.min(budgetPercent, 100)}%` }}
-                      transition={{ duration: 0.6, delay: 0.6 + index * 0.05 }}
-                      className="h-full rounded-full transition-colors"
-                      style={{
-                        backgroundColor: budgetPercent >= 100
-                          ? '#ef4444'
-                          : isWarning
-                            ? '#f59e0b'
-                            : account.color,
-                      }}
-                    />
-                  </div>
-                </div>
-              ) : (
-                <div className="pt-2">
-                  <p className="text-xs text-[var(--muted)] italic">No budget set</p>
-                </div>
-              )}
+              <p className="text-lg font-bold text-[var(--foreground)]">
+                {formatCurrency(account.balance)}
+              </p>
+
+              <div className="flex items-center justify-between mt-3">
+                <span className="text-[10px] text-[var(--muted)]">{totalTx} transactions</span>
+                <span className="inline-flex items-center gap-1 text-[10px] font-semibold text-green-600 bg-green-50 px-2 py-0.5 rounded-full">
+                  Active
+                </span>
+              </div>
             </motion.div>
           );
         })}
+
+        {/* Add Account Placeholder */}
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.5 }}
+          onClick={() => router.push('/accounts')}
+          className="snap-start flex-shrink-0 w-[220px] p-4 rounded-2xl border-2 border-dashed border-[var(--glass-border)] flex flex-col items-center justify-center gap-2 cursor-pointer hover:border-accent-orange/40 transition-colors group"
+        >
+          <div className="w-11 h-11 rounded-xl bg-accent-orange-light flex items-center justify-center group-hover:scale-110 transition-transform">
+            <Plus size={20} className="text-accent-orange" />
+          </div>
+          <p className="text-xs font-medium text-[var(--muted)] group-hover:text-accent-orange transition-colors">Add Account</p>
+        </motion.div>
       </div>
     </motion.div>
   );

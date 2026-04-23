@@ -24,22 +24,30 @@ export async function GET() {
             return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
         }
 
-        // Get all user transactions
+        // Get all user transactions without including account to avoid relation errors
         const transactions = await PrismaDb.transaction.findMany({
             where: { userId: session.user.id },
             orderBy: { date: "desc" },
-            include: {
-                account: {
-                    select: { name: true, icon: true }
-                }
-            }
         });
 
+        // Fetch accounts separately
+        const accounts = await PrismaDb.financialAccount.findMany({
+            where: { userId: session.user.id },
+            select: { id: true, name: true, icon: true }
+        });
+
+        const accountMap = new Map();
+        accounts.forEach(acc => accountMap.set(acc.id, { name: acc.name, icon: acc.icon }));
+
         // Serialize and normalize for frontend consumption
-        const serialized = transactions.map((t) => ({
-            ...serializeDecimal(t),
-            type: t.type.toLowerCase(), // DB stores INCOME/EXPENSE, frontend expects income/expense
-        }));
+        const serialized = transactions.map((t) => {
+            const tObj = { ...t };
+            return {
+                ...serializeDecimal(tObj),
+                type: tObj.type.toLowerCase(), // DB stores INCOME/EXPENSE, frontend expects income/expense
+                account: accountMap.get(tObj.accountId) || { name: "Unknown Account", icon: "🏦" }
+            };
+        });
 
         return NextResponse.json(serialized);
 
@@ -104,9 +112,16 @@ export async function POST(req: Request) {
             return newTransaction;
         })
 
-        // Revalidate Pages
-        //  revalidatePath("/dashboard");
-        // revalidatePath(`/account/${body.accountId}`);
+        // Trigger budget check email (non-blocking)
+        try {
+            const baseUrl = process.env.AUTH_URL || "http://localhost:3000";
+            fetch(`${baseUrl}/api/email/budget-check`, {
+                method: "POST",
+                headers: {
+                    cookie: req.headers.get("cookie") || "",
+                },
+            }).catch(() => { /* silent - email is best-effort */ });
+        } catch { /* silent */ }
 
         return NextResponse.json(
             { success: true, data: serializeDecimal(transaction) },

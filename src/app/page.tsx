@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
 import {
   ArrowRight,
@@ -15,7 +16,33 @@ import {
   IndianRupee,
   PieChart,
   Bell,
+  Lock,
+  Brain,
+  Smartphone,
 } from "lucide-react";
+import { useEffect, useState } from "react";
+
+// Helper Button component to resolve missing component error
+const Button = ({ className = "", variant = "default", size = "default", ...props }) => {
+  const baseStyle = "inline-flex items-center justify-center rounded-md font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 disabled:pointer-events-none disabled:opacity-50";
+  const variants = {
+    default: "bg-primary text-primary-foreground hover:bg-primary/90",
+    ghost: "hover:bg-muted text-foreground",
+    outline: "border border-input bg-transparent hover:bg-accent hover:text-accent-foreground",
+  };
+  const sizes = {
+    default: "h-10 px-4 py-2",
+    sm: "h-9 rounded-md px-3",
+    lg: "h-11 rounded-md px-8",
+  };
+
+  return (
+    <button
+      className={`${baseStyle} ${variants[variant] || variants.default} ${sizes[size] || sizes.default} ${className}`}
+      {...props}
+    />
+  );
+};
 
 const fadeInUp = {
   initial: { opacity: 0, y: 30 },
@@ -30,7 +57,7 @@ const staggerContainer = {
   },
 };
 
-const features = [
+const features2 = [
   {
     icon: <Wallet className="w-6 h-6" />,
     title: "Manual Entry",
@@ -71,207 +98,384 @@ const features = [
     title: "Bank-Grade Security",
     description:
       "End-to-end encryption, Arcjet protection against bots & attacks, and secure authentication.",
-    gradient: "from-indigo-500 to-violet-400",
+    gradient: "from-orange-500 to-amber-400",
+  },
+];
+
+const features = [
+  {
+    icon: Brain,
+    title: "AI-Powered Tracking",
+    description:
+      "Our intelligent system learns your spending patterns and automatically categorizes transactions for effortless money management.",
+    color: "from-violet-500 to-purple-600",
+    bgGlow: "bg-violet-500/20",
+  },
+  {
+    icon: Smartphone,
+    title: "Multi-Input Methods",
+    description:
+      "Add transactions via voice commands, receipt scanning, manual entry, or bulk import from bank statements. Tracking money has never been easier.",
+    color: "from-blue-500 to-cyan-600",
+    bgGlow: "bg-blue-500/20",
+  },
+  {
+    icon: TrendingUp,
+    title: "Smart Analytics",
+    description:
+      "Get powerful insights into your spending habits with beautiful charts, trend analysis, and personalized recommendations to save more.",
+    color: "from-emerald-500 to-teal-600",
+    bgGlow: "bg-emerald-500/20",
+  },
+  {
+    icon: Shield,
+    title: "Bank-Grade Security",
+    description:
+      "Your financial data is encrypted with AES-256 and protected with multi-layer security. We never store your banking credentials.",
+    color: "from-orange-500 to-red-600",
+    bgGlow: "bg-orange-500/20",
   },
 ];
 
 const stats = [
-  { value: "3", label: "Ways to Add", icon: <Zap className="w-5 h-5" /> },
-  {
-    value: "₹0",
-    label: "Forever Free",
-    icon: <IndianRupee className="w-5 h-5" />,
-  },
-  {
-    value: "AI",
-    label: "Powered Insights",
-    icon: <Sparkles className="w-5 h-5" />,
-  },
-  {
-    value: "100%",
-    label: "Data Privacy",
-    icon: <Shield className="w-5 h-5" />,
-  },
+  { label: "Active Users", value: "2M+", icon: Sparkles },
+  { label: "Transactions Tracked", value: "500M+", icon: Zap },
+  { label: "Money Saved", value: "Rs 2,000Cr+", icon: TrendingUp },
+  { label: "UPI Payments", value: "1B+", icon: BarChart3 },
 ];
 
 export default function LandingPage() {
+  const router = useRouter();
+  const [currentSlide, setCurrentSlide] = useState(0);
+
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setCurrentSlide((prev) => (prev + 1) % features.length);
+    }, 5000);
+    return () => clearInterval(timer);
+  }, []);
+
   return (
-    <div className="min-h-screen bg-[var(--background)] text-[var(--foreground)] overflow-x-hidden">
-      {/* ── Navigation ──────────────────────────────────────────────────── */}
-      <nav className="fixed top-0 left-0 right-0 z-50 border-b border-[var(--glass-border)] bg-[var(--background)]/80 backdrop-blur-xl">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between h-16">
-          <div className="flex items-center gap-3">
-            <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center shadow-lg shadow-indigo-500/20">
-              <span className="text-white font-bold text-sm">₹</span>
-            </div>
-            <div>
-              <h1 className="text-lg font-bold gradient-text tracking-tight">
-                FinDash
-              </h1>
-            </div>
-          </div>
-          <div className="flex items-center gap-3">
-            <Link
-              href="/sign-in"
-              className="px-4 py-2 text-sm font-medium text-[var(--muted-foreground)] hover:text-[var(--foreground)] transition-colors"
-            >
-              Sign In
-            </Link>
-            <Link
-              href="/sign-up"
-              className="px-5 py-2.5 text-sm font-semibold rounded-xl bg-gradient-to-r from-indigo-500 to-purple-600 text-white shadow-lg shadow-indigo-500/25 hover:shadow-indigo-500/40 transition-all hover:scale-[1.02] active:scale-[0.98]"
-            >
-              Get Started
-            </Link>
-          </div>
-        </div>
-      </nav>
-
-      {/* ── Hero Section ────────────────────────────────────────────────── */}
-      <section className="relative pt-32 pb-20 px-4 sm:px-6 lg:px-8">
-        {/* Background Glow */}
-        <div className="absolute inset-0 overflow-hidden pointer-events-none">
-          <div className="absolute top-1/4 left-1/2 -translate-x-1/2 w-[600px] h-[600px] bg-indigo-500/10 rounded-full blur-[120px]" />
-          <div className="absolute top-1/3 left-1/3 w-[400px] h-[400px] bg-purple-500/8 rounded-full blur-[100px]" />
-        </div>
-
+    <div className="min-h-screen bg-background text-foreground overflow-hidden">
+      {/* Animated Background */}
+      <div className="fixed inset-0 pointer-events-none">
+        <div className="absolute top-0 left-1/4 w-96 h-96 bg-primary/5 rounded-full blur-3xl" />
+        <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-primary/5 rounded-full blur-3xl" />
         <motion.div
-          className="relative max-w-5xl mx-auto text-center"
-          variants={staggerContainer}
-          initial="initial"
-          animate="animate"
-        >
-          {/* Badge */}
-          <motion.div variants={fadeInUp} className="mb-6">
-            <span className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-xs font-medium bg-indigo-500/10 text-indigo-400 border border-indigo-500/20">
-              <Sparkles className="w-3.5 h-3.5" />
-              Built for India&apos;s Digital Economy
-            </span>
-          </motion.div>
-
-          {/* Headline */}
-          <motion.h1
-            variants={fadeInUp}
-            className="text-4xl sm:text-5xl lg:text-7xl font-extrabold tracking-tight leading-[1.1] mb-6"
-          >
-            Track Every{" "}
-            <span className="gradient-text">Rupee</span>
-            <br />
-            <span className="text-[var(--muted-foreground)]">
-              Master Your Finances
-            </span>
-          </motion.h1>
-
-          {/* Subheadline */}
-          <motion.p
-            variants={fadeInUp}
-            className="text-lg sm:text-xl text-[var(--muted-foreground)] max-w-2xl mx-auto mb-10 leading-relaxed"
-          >
-            Add transactions by{" "}
-            <span className="text-[var(--foreground)] font-medium">form</span>,{" "}
-            <span className="text-[var(--foreground)] font-medium">
-              receipt scan
-            </span>
-            , or{" "}
-            <span className="text-[var(--foreground)] font-medium">voice</span>.
-            Get AI-powered analytics, budget alerts, and spending insights —
-            completely free.
-          </motion.p>
-
-          {/* CTA Buttons */}
-          <motion.div
-            variants={fadeInUp}
-            className="flex flex-col sm:flex-row items-center justify-center gap-4"
-          >
-            <Link
-              href="/sign-up"
-              className="group flex items-center gap-2 px-8 py-4 text-base font-semibold rounded-2xl bg-gradient-to-r from-indigo-500 to-purple-600 text-white shadow-xl shadow-indigo-500/25 hover:shadow-indigo-500/40 transition-all hover:scale-[1.02] active:scale-[0.98]"
-            >
-              Start Tracking Free
-              <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
-            </Link>
-            <Link
-              href="/sign-in"
-              className="flex items-center gap-2 px-8 py-4 text-base font-medium rounded-2xl border border-[var(--glass-border)] bg-[var(--surface)] hover:bg-[var(--surface-hover)] transition-all"
-            >
-              Sign In to Dashboard
-            </Link>
-          </motion.div>
-        </motion.div>
-      </section>
-
-      {/* ── Stats Bar ───────────────────────────────────────────────────── */}
-      <section className="relative py-12 px-4 border-y border-[var(--glass-border)]">
+          className="absolute w-2 h-2 bg-primary/30 rounded-full"
+          animate={{
+            x: [0, 100, 200, 100, 0],
+            y: [0, 150, 50, 200, 0],
+          }}
+          transition={{ duration: 20, repeat: Infinity, ease: "linear" }}
+        />
         <motion.div
-          className="max-w-5xl mx-auto grid grid-cols-2 md:grid-cols-4 gap-8"
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.5 }}
-        >
-          {stats.map((stat, i) => (
-            <div key={i} className="text-center">
-              <div className="inline-flex items-center justify-center w-10 h-10 rounded-xl bg-indigo-500/10 text-indigo-400 mb-3">
-                {stat.icon}
-              </div>
-              <div className="text-2xl sm:text-3xl font-bold">{stat.value}</div>
-              <div className="text-sm text-[var(--muted-foreground)]">
-                {stat.label}
-              </div>
-            </div>
-          ))}
-        </motion.div>
-      </section>
+          className="absolute right-20 w-3 h-3 bg-primary/20 rounded-full"
+          animate={{
+            x: [0, -100, -50, -150, 0],
+            y: [0, 100, 250, 50, 0],
+          }}
+          transition={{ duration: 25, repeat: Infinity, ease: "linear" }}
+        />
+      </div>
 
-      {/* ── Features Grid ───────────────────────────────────────────────── */}
-      <section className="py-24 px-4 sm:px-6 lg:px-8">
+      {/* Header */}
+      <motion.header
+        initial={{ y: -20, opacity: 0 }}
+        animate={{ y: 0, opacity: 1 }}
+        className="relative z-10 flex items-center justify-between px-6 lg:px-12 h-16"
+      >
+        <div className="flex items-center gap-3">
+          <div className="flex items-center justify-center w-9 h-9 rounded-lg  bg-gradient-to-br from-orange-500 to-orange-600  text-white font-bold text-lg">
+            Rs
+          </div>
+          <span className="font-bold text-lg tracking-tight">RupeeTrack</span>
+        </div>
+        <div className="flex items-center gap-3">
+          <Button variant="" onClick={() => router.push("/sign-in")} className="bg-none bg-transparent text-white hover:bg-white hover:text-black cursor-pointer">
+            Sign In
+          </Button>
+          <Button
+            onClick={() => router.push("/sign-up")}
+            className=" bg-gradient-to-br from-orange-500 to-orange-600  hover:from-orange-600 hover:to-orange-700 text-white cursor-pointer"
+          >
+            Get Started
+          </Button>
+        </div>
+      </motion.header >
+
+      {/* Hero Section */}
+      < section className="relative z-10 px-6 lg:px-12 pt-12 pb-24" >
         <div className="max-w-7xl mx-auto">
+          <div className="grid lg:grid-cols-2 gap-12 items-center">
+            {/* Left Content */}
+            <motion.div
+              initial={{ x: -50, opacity: 0 }}
+              animate={{ x: 0, opacity: 1 }}
+              transition={{ delay: 0.2, duration: 0.6 }}
+              className="space-y-6"
+            >
+              <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-primary/10 text-primary text-sm font-medium">
+                <Sparkles className="w-4 h-4" />
+                Made for India
+              </div>
+
+              <h1 className="text-4xl lg:text-6xl font-bold leading-tight">
+                Track Every{" "}
+                <span className=" bg-gradient-to-br from-orange-500 to-orange-600 bg-clip-text text-transparent">
+                  Rupee
+                </span>
+                , <br />
+                Master Your{" "}
+                <span className="bg-gradient-to-r from-emerald-500 to-teal-600 bg-clip-text text-transparent">
+                  Money
+                </span>
+              </h1>
+
+              <p className="text-lg text-muted-foreground max-w-lg">
+                The smartest way to track your UPI payments, expenses, and savings.
+                Built for millions of Indians who use digital payments every day.
+              </p>
+
+              <div className="flex flex-wrap gap-3">
+                <Button
+                  size="lg"
+                  onClick={() => router.push("/sign-up")}
+                  className="gap-2 bg-gradient-to-br from-orange-500 to-orange-600  hover:from-orange-600 hover:to-orange-700 text-white cursor-pointer"
+                >
+                  Start Tracking Free
+                  <ArrowRight className="w-4 h-4" />
+                </Button>
+                <Button
+                  size="lg"
+                  variant="outline"
+                  onClick={() => router.push("/sign-in")}
+                  className="gap-2 hover:bg-gray-800 cursor-pointer"
+                >
+                  <Lock className="w-4 h-4" />
+                  Secure Login
+                </Button>
+              </div>
+
+              {/* Stats */}
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 pt-6">
+                {stats.map((stat, i) => (
+                  <motion.div
+                    key={stat.label}
+                    initial={{ y: 20, opacity: 0 }}
+                    animate={{ y: 0, opacity: 1 }}
+                    transition={{ delay: 0.4 + i * 0.1 }}
+                    className="text-center"
+                  >
+                    <div className="flex items-center justify-center w-10 h-10 mx-auto rounded-lg bg-primary/10 mb-2">
+                      <stat.icon className="w-5 h-5 text-primary" />
+                    </div>
+                    <p className="text-xl font-bold">{stat.value}</p>
+                    <p className="text-xs text-muted-foreground">{stat.label}</p>
+                  </motion.div>
+                ))}
+              </div>
+            </motion.div>
+
+            {/* Right - Feature Carousel */}
+            <motion.div
+              initial={{ x: 50, opacity: 0 }}
+              animate={{ x: 0, opacity: 1 }}
+              transition={{ delay: 0.4, duration: 0.6 }}
+              className="relative"
+            >
+              {/* Phone Mockup */}
+              <div className="relative mx-auto w-[280px] h-[560px] bg-card rounded-[2.5rem] border-4 border-border shadow-2xl overflow-hidden">
+                {/* Phone Screen Content */}
+                <div className="absolute inset-0 bg-gradient-to-b from-[#121212] to-[#1E1E1E]">
+                  {/* Status Bar */}
+                  <div className="flex items-center justify-between px-6 pt-3 pb-2">
+                    <span className="text-xs font-medium">9:41</span>
+                    <div className="flex gap-1">
+                      <div className="w-4 h-4 rounded-full bg-primary/20" />
+                      <div className="w-4 h-4 rounded-full bg-primary/20" />
+                    </div>
+                  </div>
+
+                  {/* App Header */}
+                  <div className="px-4 py-3">
+                    <div className="flex items-center gap-2 mb-3">
+                      <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-orange-500 to-orange-600  flex items-center justify-center text-white text-xs font-bold">
+                        Rs
+                      </div>
+                      <span className="font-semibold text-sm">RupeeTrack</span>
+                    </div>
+
+                    {/* Balance Card */}
+                    <div className="p-4 rounded-xl bg-gradient-to-br from-orange-500 to-orange-600  text-white mb-3">
+                      <p className="text-xs opacity-80">Total Balance</p>
+                      <p className="text-2xl font-bold">Rs 1,24,500</p>
+                      <div className="flex gap-4 mt-2">
+                        <div>
+                          <p className="text-[10px] opacity-80">Income</p>
+                          <p className="text-sm font-semibold">+Rs 85,000</p>
+                        </div>
+                        <div>
+                          <p className="text-[10px] opacity-80">Expense</p>
+                          <p className="text-sm font-semibold">-Rs 32,400</p>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Quick Actions */}
+                    <div className="flex gap-2 mb-3">
+                      {["Add", "Scan", "Voice", "Stats"].map((action) => (
+                        <div
+                          key={action}
+                          className="flex-1 p-2 rounded-lg bg-card border border-border text-center"
+                        >
+                          <div className="w-8 h-8 mx-auto rounded-full bg-primary/10 flex items-center justify-center mb-1">
+                            <div className="w-3 h-3 rounded-full bg-primary" />
+                          </div>
+                          <p className="text-[10px]">{action}</p>
+                        </div>
+                      ))}
+                    </div>
+
+                    {/* Recent Transactions */}
+                    <div className="px-1">
+                      <p className="text-xs font-medium mb-2">Recent</p>
+                      {[
+                        { name: "Swiggy", amt: "-Rs 450", color: "bg-orange-500" },
+                        { name: "Amazon", amt: "-Rs 2,399", color: "bg-blue-500" },
+                        { name: "Salary", amt: "+Rs 85,000", color: "bg-emerald-500" },
+                      ].map((tx) => (
+                        <div
+                          key={tx.name}
+                          className="flex items-center justify-between py-2 border-b border-border/50"
+                        >
+                          <div className="flex items-center gap-2">
+                            <div
+                              className={`w-7 h-7 rounded-full ${tx.color} flex items-center justify-center`}
+                            >
+                              <div className="w-2.5 h-2.5 rounded-full bg-white/50" />
+                            </div>
+                            <span className="text-xs">{tx.name}</span>
+                          </div>
+                          <span className="text-xs font-medium">{tx.amt}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+
+                {/* Floating Elements */}
+                <motion.div
+                  className="absolute -right-4 top-20 px-3 py-2 rounded-lg bg-card border border-border shadow-lg"
+                  animate={{ y: [0, -10, 0] }}
+                  transition={{ duration: 3, repeat: Infinity }}
+                >
+                  <p className="text-[10px] text-muted-foreground">Saved this month</p>
+                  <p className="text-sm font-bold text-emerald-500">Rs 12,500</p>
+                </motion.div>
+
+                <motion.div
+                  className="absolute -left-8 bottom-32 px-3 py-2 rounded-lg bg-card border border-border shadow-lg"
+                  animate={{ y: [0, 10, 0] }}
+                  transition={{ duration: 4, repeat: Infinity }}
+                >
+                  <div className="flex items-center gap-2">
+                    <div className="w-6 h-6 rounded-full bg-violet-500 flex items-center justify-center">
+                      <Brain className="w-3 h-3 text-white" />
+                    </div>
+                    <div>
+                      <p className="text-[10px] text-muted-foreground">AI Insight</p>
+                      <p className="text-xs font-medium">Spending up 12%</p>
+                    </div>
+                  </div>
+                </motion.div>
+              </div>
+            </motion.div>
+          </div>
+        </div>
+      </section >
+
+      {/* Features Section */}
+      < section className="relative z-10 px-6 lg:px-12 py-20 bg-[#111111]" >
+        <div className="max-w-6xl mx-auto">
           <motion.div
-            className="text-center mb-16"
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
+            initial={{ y: 30, opacity: 0 }}
+            whileInView={{ y: 0, opacity: 1 }}
             viewport={{ once: true }}
+            className="text-center mb-16"
           >
-            <h2 className="text-3xl sm:text-4xl font-bold tracking-tight mb-4">
-              Everything You Need to{" "}
-              <span className="gradient-text">Stay on Top</span>
+            <h2 className="text-3xl font-bold mb-4">
+              Why Choose{" "}
+              <span className="bg-gradient-to-br from-orange-500 to-orange-600  bg-clip-text text-transparent">
+                RupeeTrack
+              </span>
+              ?
             </h2>
-            <p className="text-[var(--muted-foreground)] text-lg max-w-2xl mx-auto">
-              Three ways to add transactions, intelligent analytics, and
-              proactive budget alerts — built for daily use.
+            <p className="text-muted-foreground max-w-2xl mx-auto">
+              Built specifically for Indian users who make UPI payments daily. Track, analyze, and optimize your finances effortlessly.
             </p>
           </motion.div>
 
-          <motion.div
-            className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
-            variants={staggerContainer}
-            initial="initial"
-            whileInView="animate"
-            viewport={{ once: true }}
-          >
+          {/* Feature Cards */}
+          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
             {features.map((feature, i) => (
               <motion.div
-                key={i}
-                variants={fadeInUp}
-                className="group relative p-6 rounded-2xl border border-[var(--glass-border)] bg-[var(--surface)] hover:bg-[var(--surface-hover)] transition-all duration-300 hover:border-indigo-500/30"
+                key={feature.title}
+                initial={{ y: 40, opacity: 0 }}
+                whileInView={{ y: 0, opacity: 1 }}
+                viewport={{ once: true }}
+                transition={{ delay: i * 0.1 }}
+                className={`group relative p-6 rounded-2xl bg-card border border-border hover:border-primary/30 transition-all duration-300 cursor-pointer`}
+                onClick={() => setCurrentSlide(i)}
               >
                 <div
-                  className={`inline-flex items-center justify-center w-12 h-12 rounded-xl bg-gradient-to-br ${feature.gradient} text-white mb-4 shadow-lg group-hover:scale-110 transition-transform`}
+                  className={`absolute inset-0 rounded-2xl ${feature.bgGlow} opacity-0 group-hover:opacity-100 transition-opacity`}
+                />
+                <div
+                  className={`relative w-12 h-12 rounded-xl bg-gradient-to-br ${feature.color} flex items-center justify-center mb-4`}
                 >
-                  {feature.icon}
+                  <feature.icon className="w-6 h-6 text-white" />
                 </div>
-                <h3 className="text-lg font-semibold mb-2">{feature.title}</h3>
-                <p className="text-sm text-[var(--muted-foreground)] leading-relaxed">
+                <h3 className="relative font-semibold mb-2">{feature.title}</h3>
+                <p className="relative text-sm text-muted-foreground">
                   {feature.description}
                 </p>
               </motion.div>
             ))}
+          </div>
+
+          {/* Active Feature Detail */}
+          <motion.div
+            key={currentSlide}
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="mt-12 p-8 rounded-2xl bg-card border border-border"
+          >
+            <div className="flex items-start gap-6">
+              <div
+                className={`w-16 h-16 rounded-2xl bg-gradient-to-br ${features[currentSlide].color} flex items-center justify-center shrink-0`}
+              >
+                {(() => {
+                  const Icon = features[currentSlide].icon;
+                  return <Icon className="w-8 h-8 text-white" />;
+                })()}
+              </div>
+              <div>
+                <h3 className="text-xl font-bold mb-2">
+                  {features[currentSlide].title}
+                </h3>
+                <p className="text-muted-foreground">
+                  {features[currentSlide].description}
+                </p>
+              </div>
+            </div>
           </motion.div>
         </div>
-      </section>
+      </section >
 
       {/* ── How It Works ────────────────────────────────────────────────── */}
-      <section className="py-24 px-4 sm:px-6 lg:px-8 border-t border-[var(--glass-border)]">
+      < section className="py-24 px-4 sm:px-6 lg:px-8 border-t border-[var(--glass-border)]" >
+        <h1 className="text-center text-5xl font-bold">How It Works</h1>
         <div className="max-w-5xl mx-auto">
           <motion.div
             className="text-center mb-16"
@@ -279,7 +483,7 @@ export default function LandingPage() {
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
           >
-            <h2 className="text-3xl sm:text-4xl font-bold tracking-tight mb-4">
+            <h2 className="text-2xl sm:text-4xl font-bold tracking-tight mb-4 text-gray-100/60 mt-2">
               Simple as <span className="gradient-text">1-2-3</span>
             </h2>
           </motion.div>
@@ -290,13 +494,13 @@ export default function LandingPage() {
                 step: "01",
                 title: "Create Account",
                 desc: "Sign up with email, Google, or GitHub in seconds.",
-                icon: <Wallet className="w-8 h-8 text-indigo-400" />,
+                icon: <Wallet className="w-8 h-8 text-orange-400" />,
               },
               {
                 step: "02",
                 title: "Add Transactions",
                 desc: "Use form, scan receipts, or speak — whichever is fastest.",
-                icon: <TrendingUp className="w-8 h-8 text-purple-400" />,
+                icon: <TrendingUp className="w-8 h-8 text-amber-400" />,
               },
               {
                 step: "03",
@@ -325,17 +529,17 @@ export default function LandingPage() {
             ))}
           </div>
         </div>
-      </section>
+      </section >
 
       {/* ── CTA Section ─────────────────────────────────────────────────── */}
-      <section className="py-24 px-4 sm:px-6 lg:px-8">
+      < section className="py-24 px-4 sm:px-6 lg:px-8" >
         <motion.div
-          className="max-w-4xl mx-auto text-center p-12 rounded-3xl border border-indigo-500/20 bg-gradient-to-br from-indigo-500/5 to-purple-500/5 relative overflow-hidden"
+          className="max-w-4xl mx-auto text-center p-12 rounded-3xl border border-orange-500/20 bg-gradient-to-br from-orange-500/5 to-amber-500/5 relative overflow-hidden"
           initial={{ opacity: 0, scale: 0.95 }}
           whileInView={{ opacity: 1, scale: 1 }}
           viewport={{ once: true }}
         >
-          <div className="absolute inset-0 bg-gradient-to-r from-indigo-500/5 to-purple-500/5 blur-3xl" />
+          <div className="absolute inset-0 bg-gradient-to-r from-orange-500/5 to-amber-500/5 blur-3xl" />
           <div className="relative">
             <h2 className="text-3xl sm:text-4xl font-bold mb-4">
               Ready to Take Control?
@@ -346,33 +550,33 @@ export default function LandingPage() {
             </p>
             <Link
               href="/sign-up"
-              className="inline-flex items-center gap-2 px-8 py-4 text-base font-semibold rounded-2xl bg-gradient-to-r from-indigo-500 to-purple-600 text-white shadow-xl shadow-indigo-500/25 hover:shadow-indigo-500/40 transition-all hover:scale-[1.02]"
+              className="inline-flex items-center gap-2 px-8 py-4 text-base font-semibold rounded-2xl bg-gradient-to-r from-orange-500 to-orange-600 text-white shadow-xl shadow-orange-500/25 hover:shadow-orange-500/40 transition-all hover:scale-[1.02]"
             >
               Create Free Account
               <ArrowRight className="w-5 h-5" />
             </Link>
           </div>
         </motion.div>
-      </section>
+      </section >
 
       {/* ── Footer ──────────────────────────────────────────────────────── */}
-      <footer className="border-t border-[var(--glass-border)] py-8 px-4">
+      < footer className="border-t border-[var(--glass-border)] py-8 px-4" >
         <div className="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4 text-sm text-[var(--muted-foreground)]">
           <div className="flex items-center gap-2">
-            <div className="w-6 h-6 rounded-lg bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center">
+            <div className="w-6 h-6 rounded-lg bg-gradient-to-br from-orange-500 to-orange-600 flex items-center justify-center">
               <span className="text-white font-bold text-[10px]">₹</span>
             </div>
             <span className="font-semibold text-[var(--foreground)]">
-              FinDash
+              RupeeTrack
             </span>
           </div>
-          <p>© {new Date().getFullYear()} FinDash. All rights reserved.</p>
+          <p>© {new Date().getFullYear()} RupeeTrack. All rights reserved.</p>
           <div className="flex items-center gap-1 text-xs">
             <Shield className="w-3.5 h-3.5 text-green-400" />
             <span>Protected by Arcjet</span>
           </div>
         </div>
-      </footer>
-    </div>
+      </footer >
+    </div >
   );
 }

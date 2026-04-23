@@ -3,32 +3,33 @@
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import {
-  AreaChart,
-  Area,
+  BarChart,
+  Bar,
   XAxis,
   YAxis,
   CartesianGrid,
   Tooltip,
   ResponsiveContainer,
+  Legend,
 } from 'recharts';
-import { useStore } from '@/store/useStore';
 import { getMonthlySummaries } from '@/utils/calculations';
 import { formatCurrency, formatMonth } from '@/utils/formatters';
 
 export default function BalanceTrendChart({ accounts }: { accounts: any[] }) {
-  const transactions = accounts?.flatMap((a: any) => 
+  const transactions = accounts?.flatMap((a: any) =>
     a.transactions?.map((t: any) => ({
       ...t,
       type: t.type.toLowerCase(),
       accountId: a.id
     })) || []
   ) || [];
-  const theme = useStore((s) => s.theme);
-  const summaries = getMonthlySummaries(transactions);
 
-  const data = summaries.map((s) => ({
+  const summaries = getMonthlySummaries(transactions);
+  const data = summaries.slice(-8).map((s) => ({
     ...s,
     monthLabel: formatMonth(s.month),
+    profit: s.income,
+    loss: s.expenses,
   }));
 
   const [mounted, setMounted] = useState(false);
@@ -37,19 +38,18 @@ export default function BalanceTrendChart({ accounts }: { accounts: any[] }) {
   const CustomTooltip = ({ active, payload, label }: any) => {
     if (!active || !payload?.length) return null;
     return (
-      <div
-        className="glass-card-sm p-3 shadow-lg"
-        style={{ backgroundColor: 'var(--dropdown-bg)' }}
-      >
-        <p className="text-xs font-medium mb-2">{label}</p>
+      <div className="bg-white border border-gray-100 rounded-xl p-3 shadow-lg">
+        <p className="text-xs font-semibold text-gray-800 mb-2">{label}</p>
         {payload.map((entry: any, i: number) => (
           <div key={i} className="flex items-center gap-2 text-xs">
             <div
-              className="w-2 h-2 rounded-full"
+              className="w-2.5 h-2.5 rounded-sm"
               style={{ backgroundColor: entry.color }}
             />
-            <span className="text-[var(--muted)] capitalize">{entry.name}:</span>
-            <span className="font-medium">{formatCurrency(entry.value)}</span>
+            <span className="text-gray-500">{entry.name}:</span>
+            <span className="font-semibold text-gray-800">
+              {formatCurrency(entry.value)}
+            </span>
           </div>
         ))}
       </div>
@@ -60,74 +60,61 @@ export default function BalanceTrendChart({ accounts }: { accounts: any[] }) {
     <motion.div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ delay: 0.3 }}
-      className="glass-card p-5"
+      transition={{ delay: 0.2 }}
+      className="dash-card p-5"
     >
-      <div className="flex items-center justify-between mb-6">
-        <h3 className="text-sm font-semibold">Balance Trend</h3>
-        <span className="text-xs text-[var(--muted)]">Last 6 months</span>
+      <div className="flex items-center justify-between mb-1">
+        <div>
+          <h3 className="text-sm font-semibold text-[var(--foreground)]">Total Income</h3>
+          <p className="text-xs text-[var(--muted)]">View your income in a certain period of time</p>
+        </div>
+        <div className="flex items-center gap-4">
+          <div className="flex items-center gap-1.5 text-xs text-[var(--muted)]">
+            <div className="w-2.5 h-2.5 rounded-sm bg-accent-orange" />
+            Profit
+          </div>
+          <div className="flex items-center gap-1.5 text-xs text-[var(--muted)]">
+            <div className="w-2.5 h-2.5 rounded-sm bg-gray-800" />
+            Loss
+          </div>
+        </div>
       </div>
 
-      <div className="h-[280px]">
+      <div className="h-[280px] mt-4">
         {mounted && (
           <ResponsiveContainer width="100%" height="100%" minWidth={0}>
-            <AreaChart data={data} margin={{ top: 5, right: 5, bottom: 5, left: 0 }}>
-              <defs>
-                <linearGradient id="incomeGradient" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="0%" stopColor="#22c55e" stopOpacity={0.3} />
-                  <stop offset="100%" stopColor="#22c55e" stopOpacity={0} />
-                </linearGradient>
-                <linearGradient id="expenseGradient" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="0%" stopColor="#ef4444" stopOpacity={0.3} />
-                  <stop offset="100%" stopColor="#ef4444" stopOpacity={0} />
-                </linearGradient>
-              </defs>
-              <CartesianGrid strokeDasharray="3 3" stroke="var(--border-color)" />
+            <BarChart data={data} margin={{ top: 5, right: 5, bottom: 5, left: -10 }} barGap={4}>
+              <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" vertical={false} />
               <XAxis
                 dataKey="monthLabel"
-                tick={{ fontSize: 12, fill: 'var(--muted)' }}
-                axisLine={{ stroke: 'var(--border-color)' }}
+                tick={{ fontSize: 11, fill: '#9CA3AF' }}
+                axisLine={false}
                 tickLine={false}
               />
               <YAxis
-                tick={{ fontSize: 12, fill: 'var(--muted)' }}
+                tick={{ fontSize: 11, fill: '#9CA3AF' }}
                 axisLine={false}
                 tickLine={false}
                 tickFormatter={(v) => `₹${(v / 1000).toFixed(0)}k`}
               />
-              <Tooltip content={<CustomTooltip />} />
-              <Area
-                type="monotone"
-                dataKey="income"
-                stroke="#22c55e"
-                strokeWidth={2}
-                fill="url(#incomeGradient)"
-                dot={{ r: 4, fill: '#22c55e', strokeWidth: 0 }}
-                activeDot={{ r: 6, fill: '#22c55e', stroke: '#fff', strokeWidth: 2 }}
+              <Tooltip content={<CustomTooltip />} cursor={{ fill: 'rgba(249, 115, 22, 0.05)' }} />
+              <Bar
+                dataKey="profit"
+                name="Profit"
+                fill="#F97316"
+                radius={[6, 6, 0, 0]}
+                maxBarSize={32}
               />
-              <Area
-                type="monotone"
-                dataKey="expenses"
-                stroke="#ef4444"
-                strokeWidth={2}
-                fill="url(#expenseGradient)"
-                dot={{ r: 4, fill: '#ef4444', strokeWidth: 0 }}
-                activeDot={{ r: 6, fill: '#ef4444', stroke: '#fff', strokeWidth: 2 }}
+              <Bar
+                dataKey="loss"
+                name="Loss"
+                fill="#1F2937"
+                radius={[6, 6, 0, 0]}
+                maxBarSize={32}
               />
-            </AreaChart>
+            </BarChart>
           </ResponsiveContainer>
         )}
-      </div>
-
-      <div className="flex items-center justify-center gap-6 mt-4">
-        <div className="flex items-center gap-2 text-xs text-[var(--muted)]">
-          <div className="w-3 h-0.5 bg-income rounded" />
-          Income
-        </div>
-        <div className="flex items-center gap-2 text-xs text-[var(--muted)]">
-          <div className="w-3 h-0.5 bg-expense rounded" />
-          Expenses
-        </div>
       </div>
     </motion.div>
   );

@@ -8,6 +8,8 @@ import BalanceTrendChart from '@/components/dashboard/BalanceTrendChart';
 import SpendingBreakdown from '@/components/dashboard/SpendingBreakdown';
 import RecentTransactions from '@/components/dashboard/RecentTransactions';
 import AccountOverview from '@/components/dashboard/AccountOverview';
+import TransactionModal from '@/components/transactions/TransactionModal';
+import { fetchJsonCached } from '@/lib/client-fetch';
 
 interface DashboardData {
   id: string;
@@ -33,20 +35,22 @@ interface DashboardData {
   }>;
 }
 
+interface DashboardResponse {
+  success: boolean;
+  data?: DashboardData;
+  error?: string;
+}
+
 export default function DashboardPage() {
   const [data, setData] = useState<DashboardData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [isTxModalOpen, setIsTxModalOpen] = useState(false);
 
   useEffect(() => {
-    fetch('/api/dashboard')
-      .then((res) => {
-        if (!res.ok) throw new Error('Failed to load dashboard');
-        return res.json();
-      })
+    fetchJsonCached<DashboardResponse>('/api/dashboard')
       .then((result) => {
-        if (result.success) {
-          console.log(result.data)
+        if (result.success && result.data) {
           setData(result.data);
         } else {
           setError(result.error || 'Something went wrong');
@@ -78,17 +82,35 @@ export default function DashboardPage() {
       animate={{ opacity: 1 }}
       className="space-y-6 max-w-7xl mx-auto"
     >
-      {/* Pass the full data or specific parts */}
-      <SummaryCards accounts={data.financialAccounts} />
+      {/* Greeting Header */}
+      <div className="mb-8">
+        <h1 className="text-2xl font-bold text-[var(--foreground)]">Good morning, {data.name.split(' ')[0]} 👋</h1>
+        <p className="text-sm text-[var(--muted)] mt-1">Stay on top of your finances, monitor progress, and track status.</p>
+      </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      {/* Row 1: Main Stats (now includes Add Transaction) */}
+      <SummaryCards
+        accounts={data.financialAccounts}
+        onManualAdd={() => setIsTxModalOpen(true)}
+      />
+
+      {/* Row 2: Budget */}
+      <div className="grid grid-cols-2 gap-6">
         <BalanceTrendChart accounts={data.financialAccounts} />
         <SpendingBreakdown accounts={data.financialAccounts} />
       </div>
 
+      {/* Row 3: Account Carousel */}
       <AccountOverview accounts={data.financialAccounts} />
 
+      {/* Row 5: Recent Transactions Table */}
       <RecentTransactions accounts={data.financialAccounts} />
+
+      {/* Modals */}
+      <TransactionModal
+        isOpen={isTxModalOpen}
+        onClose={() => setIsTxModalOpen(false)}
+      />
     </motion.div>
   );
 }

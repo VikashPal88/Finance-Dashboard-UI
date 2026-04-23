@@ -78,7 +78,7 @@ export default function Sidebar() {
         {/* Logo */}
         <div className={`relative flex items-center h-16 border-b transition-all duration-300 ${sidebarOpen ? 'px-4' : 'justify-center'}`} style={{ borderColor: 'var(--glass-border)' }}>
           <div className="flex items-center gap-3 min-w-0">
-            <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center flex-shrink-0 shadow-lg shadow-indigo-500/20">
+            <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-orange-500 to-orange-600 flex items-center justify-center flex-shrink-0 shadow-lg shadow-orange-500/20">
               <span className="text-white font-bold text-sm">₹</span>
             </div>
             <AnimatePresence>
@@ -113,7 +113,7 @@ export default function Sidebar() {
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.98 }}
               onClick={openAddTransaction}
-              className="w-full flex items-center justify-center gap-2 px-4 py-3 rounded-xl bg-gradient-to-r from-indigo-500 to-purple-600 text-white text-sm font-semibold shadow-lg shadow-indigo-500/25 hover:shadow-indigo-500/40 transition-shadow"
+              className="w-full flex items-center justify-center gap-2 px-4 py-3 rounded-xl bg-gradient-to-r from-orange-500 to-orange-600 text-white text-sm font-semibold shadow-lg shadow-orange-500/25 hover:shadow-orange-500/40 transition-shadow"
             >
               <Plus size={18} />
               New Transaction
@@ -123,7 +123,7 @@ export default function Sidebar() {
               whileHover={{ scale: 1.1 }}
               whileTap={{ scale: 0.95 }}
               onClick={openAddTransaction}
-              className="w-full flex items-center justify-center p-3 rounded-xl bg-gradient-to-r from-indigo-500 to-purple-600 text-white shadow-lg shadow-indigo-500/25"
+              className="w-full flex items-center justify-center p-3 rounded-xl bg-gradient-to-r from-orange-500 to-orange-600 text-white shadow-lg shadow-orange-500/25"
               title="New Transaction"
             >
               <Plus size={18} />
@@ -195,7 +195,7 @@ export default function Sidebar() {
             {theme === 'dark' ? (
               <Sun size={18} className="text-amber-400 flex-shrink-0" />
             ) : (
-              <Moon size={18} className="text-indigo-400 flex-shrink-0" />
+              <Moon size={18} className="text-orange-400 flex-shrink-0" />
             )}
             <AnimatePresence>
               {sidebarOpen && (

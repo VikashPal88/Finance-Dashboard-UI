@@ -1,17 +1,50 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { useStore } from '@/store/useStore';
 import TopCategories from '@/components/insights/TopCategories';
 import MonthlyComparison from '@/components/insights/MonthlyComparison';
 import SpendingInsights from '@/components/insights/SpendingInsights';
 import ExpenseTrendChart from '@/components/insights/ExpenseTrendChart';
+import AIInsightsCard from '@/components/insights/AIInsightsCard';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Loader2 } from 'lucide-react';
+import { fetchJsonCached } from '@/lib/client-fetch';
+import { Account, Transaction } from '@/types';
 
 export default function InsightsPage() {
-  const accounts = useStore((s) => s.accounts);
+  const { accounts, setAccounts, setTransactions } = useStore();
   const [accountId, setAccountId] = useState<string>('all');
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const [accData, transData] = await Promise.all([
+          fetchJsonCached<Account[]>('/api/accounts'),
+          fetchJsonCached<Transaction[]>('/api/transactions')
+        ]);
+
+        setAccounts(accData);
+        setTransactions(transData);
+      } catch (error) {
+        console.error("Failed to fetch insights data:", error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    
+    fetchData();
+  }, [setAccounts, setTransactions]);
+
+  if (isLoading) {
+    return (
+      <div className="flex h-[60vh] items-center justify-center">
+        <Loader2 className="w-8 h-8 animate-spin text-[var(--primary)]" />
+      </div>
+    );
+  }
 
   return (
     <motion.div
@@ -27,7 +60,7 @@ export default function InsightsPage() {
           </p>
         </div>
         
-        <Select value={accountId} onValueChange={setAccountId}>
+        <Select value={accountId} onValueChange={(val: string) => setAccountId(val)}>
           <SelectTrigger className="w-[200px] h-[44px] rounded-xl text-sm border bg-[var(--surface)] text-[var(--foreground)]" style={{ borderColor: 'var(--glass-border)' }}>
             <SelectValue placeholder="All Accounts">
               {accountId === 'all' ? 'All Accounts' : accounts.find(a => a.id === accountId)?.name || 'All Accounts'}
@@ -42,6 +75,9 @@ export default function InsightsPage() {
         </Select>
       </div>
 
+      {/* AI-Powered Insights Section */}
+      <AIInsightsCard />
+
       <SpendingInsights accountId={accountId} />
 
       <ExpenseTrendChart accountId={accountId} />
@@ -53,3 +89,4 @@ export default function InsightsPage() {
     </motion.div>
   );
 }
+

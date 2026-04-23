@@ -51,10 +51,10 @@ export default function SignUpPage() {
     passwordStrength <= 2
       ? "bg-red-500"
       : passwordStrength <= 3
-      ? "bg-amber-500"
-      : passwordStrength <= 4
-      ? "bg-blue-500"
-      : "bg-green-500";
+        ? "bg-amber-500"
+        : passwordStrength <= 4
+          ? "bg-blue-500"
+          : "bg-green-500";
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -165,7 +165,7 @@ export default function SignUpPage() {
             Continue with Google
           </button>
 
-          <button
+          {/* <button
             onClick={() => handleOAuthSignIn("github")}
             disabled={!!oauthLoading}
             className="w-full flex items-center justify-center gap-3 px-4 py-3 rounded-xl border border-[var(--glass-border)] bg-[var(--surface)] hover:bg-[var(--surface-hover)] transition-all text-sm font-medium disabled:opacity-50"
@@ -178,7 +178,7 @@ export default function SignUpPage() {
               </svg>
             )}
             Continue with GitHub
-          </button>
+          </button> */}
         </div>
 
         {/* Divider */}
@@ -308,11 +308,10 @@ export default function SignUpPage() {
                   {Array.from({ length: 5 }).map((_, i) => (
                     <div
                       key={i}
-                      className={`h-1.5 flex-1 rounded-full transition-colors ${
-                        i < passwordStrength
+                      className={`h-1.5 flex-1 rounded-full transition-colors ${i < passwordStrength
                           ? strengthColor
                           : "bg-[var(--surface)]"
-                      }`}
+                        }`}
                     />
                   ))}
                 </div>
@@ -324,11 +323,10 @@ export default function SignUpPage() {
                     return (
                       <div
                         key={i}
-                        className={`flex items-center gap-2 text-xs transition-colors ${
-                          met
+                        className={`flex items-center gap-2 text-xs transition-colors ${met
                             ? "text-green-400"
                             : "text-[var(--muted-foreground)]"
-                        }`}
+                          }`}
                       >
                         {met ? (
                           <Check className="w-3 h-3" />
@@ -347,7 +345,7 @@ export default function SignUpPage() {
           <button
             type="submit"
             disabled={isLoading}
-            className="w-full flex items-center justify-center gap-2 py-3 rounded-xl bg-gradient-to-r from-indigo-500 to-purple-600 text-white text-sm font-semibold shadow-lg shadow-indigo-500/25 hover:shadow-indigo-500/40 transition-all hover:scale-[1.01] active:scale-[0.99] disabled:opacity-50 disabled:hover:scale-100"
+            className="w-full flex items-center justify-center gap-2 py-3 rounded-xl bg-gradient-to-r from-orange-500 to-orange-600 text-white text-sm font-semibold shadow-lg shadow-orange-500/25 hover:shadow-orange-500/40 transition-all hover:scale-[1.01] active:scale-[0.99] disabled:opacity-50 disabled:hover:scale-100"
           >
             {isLoading ? (
               <Loader2 className="w-4 h-4 animate-spin" />
@@ -362,7 +360,7 @@ export default function SignUpPage() {
           Already have an account?{" "}
           <Link
             href="/sign-in"
-            className="text-indigo-400 hover:text-indigo-300 font-medium transition-colors"
+            className="text-orange-500 hover:text-orange-400 font-medium transition-colors"
           >
             Sign In
           </Link>
