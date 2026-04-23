@@ -1,15 +1,15 @@
-'use client';
+"use client";
 
-import { motion } from 'framer-motion';
-import { useEffect, useState } from 'react';
+import { motion } from "framer-motion";
+import { useEffect, useState } from "react";
 
-import SummaryCards from '@/components/dashboard/SummaryCards';
-import BalanceTrendChart from '@/components/dashboard/BalanceTrendChart';
-import SpendingBreakdown from '@/components/dashboard/SpendingBreakdown';
-import RecentTransactions from '@/components/dashboard/RecentTransactions';
-import AccountOverview from '@/components/dashboard/AccountOverview';
-import TransactionModal from '@/components/transactions/TransactionModal';
-import { fetchJsonCached } from '@/lib/client-fetch';
+import SummaryCards from "@/components/dashboard/SummaryCards";
+import BalanceTrendChart from "@/components/dashboard/BalanceTrendChart";
+import SpendingBreakdown from "@/components/dashboard/SpendingBreakdown";
+import RecentTransactions from "@/components/dashboard/RecentTransactions";
+import AccountOverview from "@/components/dashboard/AccountOverview";
+import TransactionModal from "@/components/transactions/TransactionModal";
+import { fetchJsonCached } from "@/lib/client-fetch";
 
 interface DashboardData {
   id: string;
@@ -27,7 +27,7 @@ interface DashboardData {
     transactions: Array<{
       id: string;
       amount: number;
-      type: 'INCOME' | 'EXPENSE';
+      type: "INCOME" | "EXPENSE";
       date: string;
       description: string;
       // add other fields you need
@@ -48,12 +48,12 @@ export default function DashboardPage() {
   const [isTxModalOpen, setIsTxModalOpen] = useState(false);
 
   useEffect(() => {
-    fetchJsonCached<DashboardResponse>('/api/dashboard')
+    fetchJsonCached<DashboardResponse>("/api/dashboard")
       .then((result) => {
         if (result.success && result.data) {
           setData(result.data);
         } else {
-          setError(result.error || 'Something went wrong');
+          setError(result.error || "Something went wrong");
         }
       })
       .catch((err) => setError(err.message))
@@ -71,7 +71,7 @@ export default function DashboardPage() {
   if (error || !data) {
     return (
       <div className="flex items-center justify-center min-h-screen text-red-500">
-        <p>Error: {error || 'No data'}</p>
+        <p>Error: {error || "No data"}</p>
       </div>
     );
   }
@@ -83,10 +83,10 @@ export default function DashboardPage() {
       className="space-y-6 max-w-7xl mx-auto"
     >
       {/* Greeting Header */}
-      <div className="mb-8">
+      {/* <div className="mb-8">
         <h1 className="text-2xl font-bold text-[var(--foreground)]">Good morning, {data.name.split(' ')[0]} 👋</h1>
         <p className="text-sm text-[var(--muted)] mt-1">Stay on top of your finances, monitor progress, and track status.</p>
-      </div>
+      </div> */}
 
       {/* Row 1: Main Stats (now includes Add Transaction) */}
       <SummaryCards

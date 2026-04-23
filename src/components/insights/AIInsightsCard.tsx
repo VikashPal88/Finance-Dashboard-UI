@@ -1,7 +1,7 @@
-'use client';
+"use client";
 
-import { useState } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { useState } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 import {
   Sparkles,
   Loader2,
@@ -16,7 +16,7 @@ import {
   Zap,
   PiggyBank,
   Shield,
-} from 'lucide-react';
+} from "lucide-react";
 
 const ICON_MAP: Record<string, React.ReactNode> = {
   saving_tip: <PiggyBank size={18} />,
@@ -26,18 +26,40 @@ const ICON_MAP: Record<string, React.ReactNode> = {
   trend_warning: <TrendingDown size={18} />,
 };
 
-const COLOR_MAP: Record<string, { bg: string; text: string; border: string }> = {
-  saving_tip: { bg: 'bg-green-50 dark:bg-green-950/20', text: 'text-green-600 dark:text-green-400', border: 'border-green-200 dark:border-green-800' },
-  spending_alert: { bg: 'bg-red-50 dark:bg-red-950/20', text: 'text-red-600 dark:text-red-400', border: 'border-red-200 dark:border-red-800' },
-  income_opportunity: { bg: 'bg-blue-50 dark:bg-blue-950/20', text: 'text-blue-600 dark:text-blue-400', border: 'border-blue-200 dark:border-blue-800' },
-  budget_advice: { bg: 'bg-orange-50 dark:bg-orange-950/20', text: 'text-orange-600 dark:text-orange-400', border: 'border-orange-200 dark:border-orange-800' },
-  trend_warning: { bg: 'bg-amber-50 dark:bg-amber-950/20', text: 'text-amber-600 dark:text-amber-400', border: 'border-amber-200 dark:border-amber-800' },
-};
+const COLOR_MAP: Record<string, { bg: string; text: string; border: string }> =
+  {
+    saving_tip: {
+      bg: "bg-green-50 dark:bg-green-950/20",
+      text: "text-green-600 dark:text-green-400",
+      border: "border-green-200 dark:border-green-800",
+    },
+    spending_alert: {
+      bg: "bg-red-50 dark:bg-red-950/20",
+      text: "text-red-600 dark:text-red-400",
+      border: "border-red-200 dark:border-red-800",
+    },
+    income_opportunity: {
+      bg: "bg-blue-50 dark:bg-blue-950/20",
+      text: "text-blue-600 dark:text-blue-400",
+      border: "border-blue-200 dark:border-blue-800",
+    },
+    budget_advice: {
+      bg: "bg-orange-50 dark:bg-orange-950/20",
+      text: "text-orange-600 dark:text-orange-400",
+      border: "border-orange-200 dark:border-orange-800",
+    },
+    trend_warning: {
+      bg: "bg-amber-50 dark:bg-amber-950/20",
+      text: "text-amber-600 dark:text-amber-400",
+      border: "border-amber-200 dark:border-amber-800",
+    },
+  };
 
 const IMPACT_COLORS: Record<string, string> = {
-  high: 'bg-red-100 text-red-600 dark:bg-red-900/30 dark:text-red-400',
-  medium: 'bg-amber-100 text-amber-600 dark:bg-amber-900/30 dark:text-amber-400',
-  low: 'bg-green-100 text-green-600 dark:bg-green-900/30 dark:text-green-400',
+  high: "bg-red-100 text-red-600 dark:bg-red-900/30 dark:text-red-400",
+  medium:
+    "bg-amber-100 text-amber-600 dark:bg-amber-900/30 dark:text-amber-400",
+  low: "bg-green-100 text-green-600 dark:bg-green-900/30 dark:text-green-400",
 };
 
 export default function AIInsightsCard() {
@@ -51,27 +73,27 @@ export default function AIInsightsCard() {
     setError(null);
 
     try {
-      const res = await fetch('/api/ai/insights');
+      const res = await fetch("/api/ai/insights");
       const json = await res.json();
 
       if (!res.ok || !json.success) {
-        setError(json.error || 'Failed to generate insights');
+        setError(json.error || "Failed to generate insights");
         return;
       }
 
       setData(json.data);
     } catch {
-      setError('Network error. Please try again.');
+      setError("Network error. Please try again.");
     } finally {
       setLoading(false);
     }
   };
 
   const scoreColor = (score: number) => {
-    if (score >= 80) return '#22c55e';
-    if (score >= 60) return '#f59e0b';
-    if (score >= 40) return '#f97316';
-    return '#ef4444';
+    if (score >= 80) return "#22c55e";
+    if (score >= 60) return "#f59e0b";
+    if (score >= 40) return "#f97316";
+    return "#ef4444";
   };
 
   return (
@@ -84,18 +106,22 @@ export default function AIInsightsCard() {
       <div className="glass-card p-6">
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-violet-500 to-purple-600 flex items-center justify-center shadow-lg shadow-violet-500/25">
+            <div className="w-10 h-10 rounded-xl bg-gradient-to-r from-orange-500 to-orange-600 flex items-center justify-center shadow-lg shadow-violet-500/25">
               <Sparkles size={20} className="text-white" />
             </div>
             <div>
-              <h2 className="text-lg font-bold text-[var(--foreground)]">AI Financial Advisor</h2>
-              <p className="text-xs text-[var(--muted)]">Powered by Google Gemini</p>
+              <h2 className="text-lg font-bold text-[var(--foreground)]">
+                AI Financial Advisor
+              </h2>
+              <p className="text-xs text-[var(--muted)]">
+                Powered by Google Gemini
+              </p>
             </div>
           </div>
           <button
             onClick={fetchInsights}
             disabled={loading}
-            className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-gradient-to-r from-violet-500 to-purple-600 text-white text-sm font-semibold shadow-lg shadow-violet-500/25 hover:shadow-violet-500/40 transition-all disabled:opacity-50"
+            className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-gradient-to-r from-orange-500 to-orange-600 text-white text-sm font-semibold shadow-lg shadow-violet-500/25 hover:shadow-violet-500/40 transition-all disabled:opacity-50"
           >
             {loading ? (
               <>
@@ -118,19 +144,27 @@ export default function AIInsightsCard() {
 
         {!data && !loading && !error && (
           <p className="text-sm text-[var(--muted)] text-center py-6">
-            Click &ldquo;Generate Insights&rdquo; to get AI-powered financial advice based on your spending patterns.
+            Click &ldquo;Generate Insights&rdquo; to get AI-powered financial
+            advice based on your spending patterns.
           </p>
         )}
 
         {error && (
           <div className="flex items-start gap-3 p-4 rounded-xl bg-red-50 dark:bg-red-950/20 border border-red-200 dark:border-red-800">
-            <AlertTriangle size={18} className="text-red-500 flex-shrink-0 mt-0.5" />
+            <AlertTriangle
+              size={18}
+              className="text-red-500 flex-shrink-0 mt-0.5"
+            />
             <div>
-              <p className="text-sm font-medium text-red-600 dark:text-red-400">{error}</p>
-              {(error.includes('API key') || error.includes('not configured') || error.includes('rate limit')) && (
+              <p className="text-sm font-medium text-red-600 dark:text-red-400">
+                {error}
+              </p>
+              {(error.includes("API key") ||
+                error.includes("not configured") ||
+                error.includes("rate limit")) && (
                 <p className="text-xs text-red-500/70 mt-1">
-                  {error.includes('rate limit')
-                    ? 'The Gemini API has a free tier rate limit. Wait 30-60 seconds and try again.'
+                  {error.includes("rate limit")
+                    ? "The Gemini API has a free tier rate limit. Wait 30-60 seconds and try again."
                     : 'Add your Gemini API key to .env file: GEMINI_API_KEY="your-key-here". Get one free at aistudio.google.com/apikey'}
                 </p>
               )}
@@ -143,9 +177,14 @@ export default function AIInsightsCard() {
             <div className="relative">
               <div className="w-16 h-16 rounded-full border-4 border-violet-200 dark:border-violet-900" />
               <div className="absolute inset-0 w-16 h-16 rounded-full border-4 border-transparent border-t-violet-500 animate-spin" />
-              <Sparkles size={20} className="absolute inset-0 m-auto text-violet-500" />
+              <Sparkles
+                size={20}
+                className="absolute inset-0 m-auto text-violet-500"
+              />
             </div>
-            <p className="text-sm font-medium text-[var(--muted)]">Analyzing your finances with AI...</p>
+            <p className="text-sm font-medium text-[var(--muted)]">
+              Analyzing your finances with AI...
+            </p>
           </div>
         )}
       </div>
@@ -175,7 +214,10 @@ export default function AIInsightsCard() {
                   />
                 </svg>
                 <div className="absolute inset-0 flex flex-col items-center justify-center">
-                  <span className="text-xl font-extrabold" style={{ color: scoreColor(data.overallScore) }}>
+                  <span
+                    className="text-xl font-extrabold"
+                    style={{ color: scoreColor(data.overallScore) }}
+                  >
                     {data.overallScore}
                   </span>
                   <span className="text-[9px] text-[var(--muted)] uppercase tracking-wider font-semibold">
@@ -185,7 +227,9 @@ export default function AIInsightsCard() {
               </div>
 
               <div className="flex-1">
-                <h3 className="text-sm font-bold text-[var(--foreground)] mb-2">Financial Health Score</h3>
+                <h3 className="text-sm font-bold text-[var(--foreground)] mb-2">
+                  Financial Health Score
+                </h3>
                 <p className="text-sm text-[var(--muted)] leading-relaxed">
                   {data.summary}
                 </p>
@@ -213,15 +257,21 @@ export default function AIInsightsCard() {
                     onClick={() => setExpanded(isExpanded ? null : insight.id)}
                     className="w-full flex items-start gap-3 p-4 text-left"
                   >
-                    <div className={`w-9 h-9 rounded-lg flex items-center justify-center flex-shrink-0 ${colors.text} ${colors.bg}`}>
-                      {insight.icon || ICON_MAP[insight.type] || <Zap size={18} />}
+                    <div
+                      className={`w-9 h-9 rounded-lg flex items-center justify-center flex-shrink-0 ${colors.text} ${colors.bg}`}
+                    >
+                      {insight.icon || ICON_MAP[insight.type] || (
+                        <Zap size={18} />
+                      )}
                     </div>
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2 mb-1">
                         <p className={`text-sm font-semibold ${colors.text}`}>
                           {insight.title}
                         </p>
-                        <span className={`text-[9px] font-bold uppercase px-1.5 py-0.5 rounded-full ${IMPACT_COLORS[insight.impact] || IMPACT_COLORS.medium}`}>
+                        <span
+                          className={`text-[9px] font-bold uppercase px-1.5 py-0.5 rounded-full ${IMPACT_COLORS[insight.impact] || IMPACT_COLORS.medium}`}
+                        >
                           {insight.impact}
                         </span>
                       </div>
@@ -233,7 +283,10 @@ export default function AIInsightsCard() {
                       {isExpanded ? (
                         <ChevronUp size={16} className="text-[var(--muted)]" />
                       ) : (
-                        <ChevronDown size={16} className="text-[var(--muted)]" />
+                        <ChevronDown
+                          size={16}
+                          className="text-[var(--muted)]"
+                        />
                       )}
                     </div>
                   </button>
@@ -242,15 +295,20 @@ export default function AIInsightsCard() {
                     {isExpanded && (
                       <motion.div
                         initial={{ height: 0, opacity: 0 }}
-                        animate={{ height: 'auto', opacity: 1 }}
+                        animate={{ height: "auto", opacity: 1 }}
                         exit={{ height: 0, opacity: 0 }}
                         className="px-4 pb-4"
                       >
                         <div className="pt-2 border-t border-current/10">
                           <div className="flex items-start gap-2 mt-2">
-                            <Shield size={14} className="text-[var(--muted)] flex-shrink-0 mt-0.5" />
+                            <Shield
+                              size={14}
+                              className="text-[var(--muted)] flex-shrink-0 mt-0.5"
+                            />
                             <div>
-                              <p className="text-xs font-semibold text-[var(--foreground)] mb-1">Action Item</p>
+                              <p className="text-xs font-semibold text-[var(--foreground)] mb-1">
+                                Action Item
+                              </p>
                               <p className="text-xs text-[var(--muted)]">
                                 {insight.actionable}
                               </p>
@@ -274,17 +332,25 @@ export default function AIInsightsCard() {
               </h3>
               <div className="space-y-3">
                 {data.optimizations.map((opt: any, i: number) => (
-                  <div key={i} className="flex items-center gap-4 p-3 rounded-xl bg-[var(--surface)] border border-[var(--glass-border)]">
+                  <div
+                    key={i}
+                    className="flex items-center gap-4 p-3 rounded-xl bg-[var(--surface)] border border-[var(--glass-border)]"
+                  >
                     <div className="flex-1 min-w-0">
-                      <p className="text-sm font-semibold text-[var(--foreground)]">{opt.category}</p>
-                      <p className="text-xs text-[var(--muted)] mt-0.5">{opt.reason}</p>
+                      <p className="text-sm font-semibold text-[var(--foreground)]">
+                        {opt.category}
+                      </p>
+                      <p className="text-xs text-[var(--muted)] mt-0.5">
+                        {opt.reason}
+                      </p>
                     </div>
                     <div className="text-right flex-shrink-0">
                       <p className="text-xs text-[var(--muted)]">
-                        ₹{opt.currentSpend?.toLocaleString('en-IN')} → ₹{opt.suggestedBudget?.toLocaleString('en-IN')}
+                        ₹{opt.currentSpend?.toLocaleString("en-IN")} → ₹
+                        {opt.suggestedBudget?.toLocaleString("en-IN")}
                       </p>
                       <p className="text-xs font-bold text-green-500">
-                        Save ₹{opt.savingPotential?.toLocaleString('en-IN')}
+                        Save ₹{opt.savingPotential?.toLocaleString("en-IN")}
                       </p>
                     </div>
                   </div>
