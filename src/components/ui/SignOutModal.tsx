@@ -15,7 +15,9 @@ export default function SignOutModal({ isOpen, onClose }: SignOutModalProps) {
 
   const handleSignOut = async () => {
     setIsLoading(true);
-    await signOut({ callbackUrl: window.location.origin });
+    // Use NEXT_PUBLIC_APP_URL for production, fallback to window.location.origin
+    const appUrl = process.env.NEXT_PUBLIC_APP_URL || window.location.origin;
+    await signOut({ callbackUrl: `${appUrl}/sign-in` });
   };
 
   return (
