@@ -29,6 +29,7 @@ import { CategoryItem, CATEGORY_COLOR_MAP } from "@/lib/categories";
 import Badge from "@/components/ui/Badge";
 import EmptyState from "@/components/ui/EmptyState";
 import TransactionModal from "./TransactionModal";
+import ConfirmDeleteModal from "@/components/ui/ConfirmDeleteModal";
 import {
   Select,
   SelectContent,
@@ -108,6 +109,18 @@ export default function TransactionList({
   const [selectedTransactionIds, setSelectedTransactionIds] = useState<
     string[]
   >([]);
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [deleteId, setDeleteId] = useState<string | null>(null);
+
+  const handleConfirmDelete = async () => {
+    if (deleteId) {
+      await deleteTransaction(deleteId);
+    } else {
+      await deleteSelectedTransactions();
+    }
+    setIsDeleteModalOpen(false);
+    setDeleteId(null);
+  };
 
   // Fetch transactions from API
   const fetchTransactions = async (force = false) => {
@@ -635,13 +648,8 @@ export default function TransactionList({
             </button>
             <button
               onClick={() => {
-                if (
-                  confirm(
-                    `Delete ${selectedTransactionIds.length} selected transaction${selectedTransactionIds.length > 1 ? "s" : ""}?`,
-                  )
-                ) {
-                  deleteSelectedTransactions();
-                }
+                setDeleteId(null);
+                setIsDeleteModalOpen(true);
               }}
               className="flex items-center gap-2 rounded-xl bg-primary px-3 py-2 text-xs font-semibold text-white transition-colors hover:bg-primary-hover"
             >
@@ -799,8 +807,8 @@ export default function TransactionList({
                         setModalOpen(true);
                       }}
                       onDelete={() => {
-                        if (confirm("Delete this transaction?"))
-                          deleteTransaction(tx.id);
+                        setDeleteId(tx.id);
+                        setIsDeleteModalOpen(true);
                       }}
                     />
                   </div>
@@ -824,7 +832,8 @@ export default function TransactionList({
                         setModalOpen(true);
                       }}
                       onDelete={() => {
-                        if (confirm("Delete?")) deleteTransaction(tx.id);
+                        setDeleteId(tx.id);
+                        setIsDeleteModalOpen(true);
                       }}
                     />
                   </div>
@@ -928,6 +937,22 @@ export default function TransactionList({
           setEditTx(null);
         }}
         editTransaction={editTx}
+      />
+
+      {/* Delete Confirmation Modal */}
+      <ConfirmDeleteModal
+        isOpen={isDeleteModalOpen}
+        onClose={() => {
+          setIsDeleteModalOpen(false);
+          setDeleteId(null);
+        }}
+        onConfirm={handleConfirmDelete}
+        title={deleteId ? "Delete Transaction" : "Delete Selected Transactions"}
+        description={
+          deleteId
+            ? "Are you sure you want to delete this transaction? This action cannot be undone."
+            : `Are you sure you want to delete ${selectedTransactionIds.length} selected transaction${selectedTransactionIds.length > 1 ? "s" : ""}? This action cannot be undone.`
+        }
       />
     </div>
   );

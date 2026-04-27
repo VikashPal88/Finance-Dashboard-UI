@@ -20,6 +20,7 @@ import { useStore } from '@/store/useStore';
 import ToggleSwitch from '@/components/ui/ToggleSwitch';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import ConfirmDeleteModal from '@/components/ui/ConfirmDeleteModal';
 import { CategoryItem } from '@/lib/categories';
 import { useSession } from 'next-auth/react';
 
@@ -40,6 +41,7 @@ export default function SettingsPage() {
   const [newCatColor, setNewCatColor] = useState('#84cc16');
   const [addingCategory, setAddingCategory] = useState(false);
   const [catError, setCatError] = useState('');
+  const [deleteCatId, setDeleteCatId] = useState<string | null>(null);
 
   // Load user info from session
   useEffect(() => {
@@ -104,14 +106,14 @@ export default function SettingsPage() {
     }
   };
 
-  const handleDeleteCategory = async (id: string) => {
-    if (!confirm('Delete this category?')) return;
+  const handleDeleteCategory = async () => {
+    if (!deleteCatId) return;
 
     try {
       const res = await fetch('/api/categories', {
         method: 'DELETE',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ id }),
+        body: JSON.stringify({ id: deleteCatId }),
       });
 
       if (res.ok) {
@@ -122,6 +124,8 @@ export default function SettingsPage() {
       }
     } catch (err) {
       alert('Network error');
+    } finally {
+      setDeleteCatId(null);
     }
   };
 
@@ -400,7 +404,7 @@ export default function SettingsPage() {
                       </span>
                     </div>
                     <button
-                      onClick={() => handleDeleteCategory(cat.id)}
+                      onClick={() => setDeleteCatId(cat.id)}
                       className="p-1.5 rounded-md text-[var(--muted)] hover:text-expense hover:bg-expense/10 transition-colors shrink-0"
                       title="Delete category"
                     >
@@ -429,6 +433,14 @@ export default function SettingsPage() {
           <button className="hover:text-[var(--foreground)] transition-colors underline">Security</button>
         </div>
       </motion.div>
+
+      <ConfirmDeleteModal
+        isOpen={!!deleteCatId}
+        onClose={() => setDeleteCatId(null)}
+        onConfirm={handleDeleteCategory}
+        title="Delete Category"
+        description="Are you sure you want to delete this custom category? This action cannot be undone."
+      />
     </motion.div>
   );
 }
